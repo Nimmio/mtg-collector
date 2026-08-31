@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CardLayout {
+  normal
+  split
+  flip
+  transform
+  modal_dfc
+  meld
+  leveler
+  class
+  saga
+  adventure
+  mutate
+  prototype
+  battle
+  planar
+  scheme
+  vanguard
+  token
+  double_faced_token
+  emblem
+  augment
+  host
+  art_series
+  reversible_card
+  case
+  attraction
+  sticker
+}
+
+enum Rarity {
+  common
+  uncommon
+  rare
+  mythic
+  special
+  bonus
+}
+
+enum Finish {
+  nonfoil
+  foil
+  etched
+}
+
+enum Condition {
+  near_mint
+  lightly_played
+  moderately_played
+  heavily_played
+  damaged
+}
+
+enum CollectionTransactionType {
+  purchase
+  sale
+  trade_in
+  trade_out
+  gift_in
+  gift_out
+  found
+  lost
+  correction
+}
+
+// A logical card identity, independent of set, printing, language, or finish.
+model Card {
+  id                String   @id @default(cuid())
+  scryfallOracleId  String   @unique
+  name              String
+  printedName       String?
+  manaCost          String?
+  cmc               Decimal? @db.Decimal(8, 3)
+  typeLine          String?
+  oracleText        String?
+  printedText       String?
+  colorIdentity     String[]
+  colors            String[]
+  keywords          String[]
+  power             String?
+  toughness         String?
+  loyalty           String?
+  defense           String?
+  layout            CardLayout
+  producedMana      String[]
+  edhrecRank        Int?
+  pennyRank         Int?
+  reserved          Boolean  @default(false)
+  gameChanger       Boolean  @default(false)
+  scryfallUri       String?
+  rulingsUri        String?
+  rawScryfallData   Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  faces             CardFace[]
+  printings         Printing[]
+
+  @@index([name])
+  @@index([typeLine])
+}
+
+model CardFace {
+  id            String   @id @default(cuid())
+  cardId        String
+  faceIndex     Int
+  name          String
+  manaCost      String?
+  typeLine      String?
+  oracleText    String?
+  printedName   String?
+  printedText   String?
+  colors        String[]
+  colorIndicator String[]
+  power         String?
+  toughness     String?
+  loyalty       String?
+  defense       String?
+  imageUri      String?
+  illustrationId String?
+  card          Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, faceIndex])
+}
+
+// A specific Scryfall printing, usually the unit users search for and own.
+model Printing {
+  id                    String   @id @default(cuid())
+  scryfallId            String   @unique
+  cardId                String
+  setCode               String
+  setName               String
+  collectorNumber       String
+  lang                  String   @default("en")
+  releasedAt            DateTime?
+  rarity                Rarity
+  artist                String?
+  flavorText            String?
+  flavorName            String?
+  watermark             String?
+  borderColor            String?
+  frame                  String?
+  frameEffects           String[]
+  securityStamp          String?
+  promo                  Boolean  @default(false)
+  promoTypes             String[]
+  variation              Boolean  @default(false)
+  digital                Boolean  @default(false)
+  fullArt                Boolean  @default(false)
+  textless               Boolean  @default(false)
+  booster                Boolean  @default(false)
+  storySpotlight         Boolean  @default(false)
+  imageStatus            String?
+  imageSmall             String?
+  imageNormal            String?
+  imageLarge             String?
+  imagePng               String?
+  imageArtCrop           String?
+  manaCostOverride       String?
+  priceUsd               Decimal? @db.Decimal(12, 4)
+  priceUsdFoil           Decimal? @db.Decimal(12, 4)
+  priceEur               Decimal? @db.Decimal(12, 4)
+  priceEurFoil           Decimal? @db.Decimal(12, 4)
+  priceTix               Decimal? @db.Decimal(12, 4)
+  pricesUpdatedAt        DateTime?
+  rawScryfallData        Json?
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  card                  Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  collectionItems       CollectionItem[]
+
+  @@unique([setCode, collectorNumber, lang])
+  @@index([cardId])
+  @@index([setCode])
+  @@index([setName])
+}
+
+model CollectionItem {
+  id                 String   @id @default(cuid())
+  userId             String
+  printingId         String
+  quantity           Int      @default(1)
+  finish             Finish   @default(nonfoil)
+  condition          Condition @default(near_mint)
+  language           String   @default("en")
+  isAltered          Boolean  @default(false)
+  isSigned           Boolean  @default(false)
+  isMisprint         Boolean  @default(false)
+  isFoilEtched       Boolean  @default(false)
+  purchasePrice      Decimal? @db.Decimal(12, 2)
+  purchaseCurrency   String   @default("USD")
+  purchaseDate       DateTime?
+  currentValue       Decimal? @db.Decimal(12, 2)
+  valueUpdatedAt     DateTime?
+  notes              String?
+  binder             String?
+  isForTrade         Boolean  @default(false)
+  isForSale          Boolean  @default(false)
+  acquiredFrom       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // This assumes the application's auth user model has this id.
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  printing           Printing @relation(fields: [printingId], references: [id], onDelete: Restrict)
+  locationId         String?
+  location           StorageLocation? @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  transactions       CollectionTransaction[]
+
+  @@index([userId, printingId])
+  @@index([userId, isForTrade])
+  @@index([userId, isForSale])
+  @@index([locationId])
+}
+
+model StorageLocation {
+  id          String           @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items       CollectionItem[]
+
+  @@unique([userId, name])
+}
+
+model CollectionTransaction {
+  id             String                    @id @default(cuid())
+  userId         String
+  collectionItemId String
+  type           CollectionTransactionType
+  quantity       Int
+  unitPrice      Decimal?                  @db.Decimal(12, 2)
+  currency       String                    @default("USD")
+  occurredAt     DateTime                  @default(now())
+  counterparty   String?
+  notes          String?
+  createdAt      DateTime                  @default(now())
+  user           User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionItem CollectionItem             @relation(fields: [collectionItemId], references: [id], onDelete: Cascade)
+
+  @@index([userId, occurredAt])
+  @@index([collectionItemId])
+}
+
+// Better Auth's generated user model can be extended with these relations.
+model User {
+  id           String                 @id
+  collectionItems CollectionItem[]
+  locations    StorageLocation[]
+  transactions CollectionTransaction[]
+}
