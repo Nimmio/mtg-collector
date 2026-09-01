@@ -1,10 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { type FormEvent, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { type FormEvent, useEffect, useState } from "react";
 
 import { cardSearchQueryOptions } from "#/card/queries/card.queries";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import { Route } from "#/routes/_authenticated/searchCards";
 import {
 	Select,
 	SelectContent,
@@ -47,12 +48,22 @@ function cardImage(card: SearchCard) {
 }
 
 export default function SearchCardView() {
-	const [input, setInput] = useState("");
-	const [query, setQuery] = useState("");
-	const [page, setPage] = useState(1);
+	const navigate = useNavigate();
+	const searchParams = Route.useSearch();
+	const query = searchParams.query;
+	const page = searchParams.page;
+	const [input, setInput] = useState(query);
 	const [sort, setSort] =
-		useState<(typeof sortOptions)[number]["value"]>("name");
-	const [direction, setDirection] = useState<"auto" | "asc" | "desc">("auto");
+		useState<(typeof sortOptions)[number]["value"]>(
+			searchParams.sort as (typeof sortOptions)[number]["value"],
+		);
+	const [direction, setDirection] = useState<"auto" | "asc" | "desc">(
+		searchParams.direction as "auto" | "asc" | "desc",
+	);
+
+	useEffect(() => {
+		setInput(query);
+	}, [query]);
 	const search = useQuery({
 		...cardSearchQueryOptions({
 			query,
@@ -68,18 +79,17 @@ export default function SearchCardView() {
 		event.preventDefault();
 		const nextQuery = input.trim();
 		if (!nextQuery) return;
-		setPage(1);
-		setQuery(nextQuery);
+		navigate({ to: ".", search: { query: nextQuery, page: 1, sort, direction } });
 	}
 
 	function changeSort(value: string) {
 		setSort(value as (typeof sortOptions)[number]["value"]);
-		setPage(1);
+		navigate({ to: ".", search: { query, page: 1, sort: value, direction } });
 	}
 
 	function changeDirection(value: string) {
 		setDirection(value as "auto" | "asc" | "desc");
-		setPage(1);
+		navigate({ to: ".", search: { query, page: 1, sort, direction: value } });
 	}
 
 	const result = search.data;
@@ -263,7 +273,7 @@ export default function SearchCardView() {
 								type="button"
 								variant="outline"
 								disabled={page === 1 || search.isFetching}
-								onClick={() => setPage((current) => current - 1)}
+								onClick={() => navigate({ to: ".", search: { query, page: page - 1, sort, direction } })}
 							>
 								Previous
 							</Button>
@@ -271,13 +281,23 @@ export default function SearchCardView() {
 								type="button"
 								variant="outline"
 								disabled={!result.has_more || search.isFetching}
-								onClick={() => setPage((current) => current + 1)}
+								onClick={() => navigate({ to: ".", search: { query, page: page + 1, sort, direction } })}
 							>
 								Next
 							</Button>
 							<Select
 								value={String(page)}
-								onValueChange={(value) => setPage(Number(value))}
+								onValueChange={(value) =>
+									navigate({
+										to: ".",
+										search: {
+											query,
+											page: Number(value),
+											sort,
+											direction,
+										},
+								})
+							}
 							>
 								<SelectTrigger className="w-32" aria-label="Select page">
 									<SelectValue />

@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 
 import { cardQueryOptions } from "#/card/queries/card.queries";
 import { Button } from "#/components/ui/button";
@@ -40,6 +39,7 @@ function imageFor(card: Card, face?: NonNullable<Card["card_faces"]>[number]) {
 }
 
 const CardDetailsView = ({ id }: CardDetailsViewProps) => {
+	const goBackToSearch = () => window.history.back();
 	const card = useQuery({
 		...cardQueryOptions(id),
 		select: (result) => result as Card,
@@ -59,9 +59,13 @@ const CardDetailsView = ({ id }: CardDetailsViewProps) => {
 						? card.error.message
 						: "Could not load this card."}
 				</p>
-				<Link to="/searchCards">
-					<Button variant="outline">Back to search</Button>
-				</Link>
+				<Button
+					variant="outline"
+					onClick={goBackToSearch}
+					className="cursor-pointer"
+				>
+					Back to search
+				</Button>
 			</div>
 		);
 
@@ -69,12 +73,13 @@ const CardDetailsView = ({ id }: CardDetailsViewProps) => {
 	const faces = data.card_faces?.length ? data.card_faces : [undefined];
 	return (
 		<section className="mx-auto max-w-5xl space-y-6">
-			<Link
-				to="/searchCards"
-				className="text-sm text-muted-foreground hover:text-foreground"
+			<button
+				type="button"
+				onClick={goBackToSearch}
+				className="cursor-pointer text-sm text-muted-foreground hover:text-foreground"
 			>
 				← Back to search
-			</Link>
+			</button>
 			<div className="grid gap-8 md:grid-cols-[minmax(16rem,24rem)_1fr]">
 				<div className="flex flex-wrap gap-4">
 					{faces.map((face, index) => {
