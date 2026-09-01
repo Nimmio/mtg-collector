@@ -95,55 +95,62 @@ export default function SearchCardView() {
 				</p>
 			</header>
 
-			<form className="flex flex-col gap-3 sm:flex-row" onSubmit={submit}>
-				<label className="sr-only" htmlFor="card-search">
-					Scryfall search query
-				</label>
-				<Input
-					id="card-search"
-					value={input}
-					onChange={(event) => setInput(event.target.value)}
-					placeholder="Search cards, e.g. lightning t:instant"
-					className="h-11 sm:max-w-xl"
-				/>
-				<Button
-					type="submit"
-					size="lg"
-					disabled={!input.trim() || search.isFetching}
+			<div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
+				<form
+					className="flex flex-col gap-3 lg:flex-row lg:items-end"
+					onSubmit={submit}
 				>
-					{search.isFetching ? "Searching..." : "Search cards"}
-				</Button>
-			</form>
-
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-				<label className="text-sm font-medium" htmlFor="card-sort">
-					Sort by
-				</label>
-				<Select value={sort} onValueChange={changeSort}>
-					<SelectTrigger id="card-sort" className="w-full sm:w-48">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						{sortOptions.map((option) => (
-							<SelectItem key={option.value} value={option.value}>
-								{option.label}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<label className="text-sm font-medium" htmlFor="card-direction">
-					Order
-				</label>
-				<Select value={direction} onValueChange={changeDirection}>
-					<SelectTrigger id="card-direction" className="w-full sm:w-36">
-						<SelectValue />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="auto">Default</SelectItem>
-						<SelectItem value="asc">Ascending</SelectItem>
-						<SelectItem value="desc">Descending</SelectItem>
-					</SelectContent>
-				</Select>
+					<div className="min-w-0 flex-1 space-y-2">
+						<label className="sr-only" htmlFor="card-search">
+							Scryfall search query
+						</label>
+						<Input
+							id="card-search"
+							value={input}
+							onChange={(event) => setInput(event.target.value)}
+							placeholder="Search cards, e.g. lightning t:instant"
+							className="h-11 w-full"
+						/>
+					</div>
+					<div className="grid gap-3 sm:grid-cols-[auto_minmax(9rem,1fr)_auto_minmax(8rem,1fr)] sm:items-center lg:flex lg:items-center">
+						<label className="text-sm font-medium" htmlFor="card-sort">
+							Sort by
+						</label>
+						<Select value={sort} onValueChange={changeSort}>
+							<SelectTrigger id="card-sort" className="w-full sm:w-48">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								{sortOptions.map((option) => (
+									<SelectItem key={option.value} value={option.value}>
+										{option.label}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<label className="text-sm font-medium" htmlFor="card-direction">
+							Order
+						</label>
+						<Select value={direction} onValueChange={changeDirection}>
+							<SelectTrigger id="card-direction" className="w-full sm:w-36">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="auto">Default</SelectItem>
+								<SelectItem value="asc">Ascending</SelectItem>
+								<SelectItem value="desc">Descending</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+					<Button
+						type="submit"
+						size="lg"
+						className="lg:shrink-0"
+						disabled={!input.trim() || search.isFetching}
+					>
+						{search.isFetching ? "Searching..." : "Search cards"}
+					</Button>
+				</form>
 			</div>
 
 			{search.isError && (
@@ -155,8 +162,8 @@ export default function SearchCardView() {
 			)}
 
 			{result && (
-				<div className="space-y-5">
-					<div className="flex items-center justify-between gap-4">
+				<div className="space-y-6 rounded-2xl border bg-card p-4 shadow-sm sm:p-6">
+					<div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
 						<p className="text-sm text-muted-foreground">
 							{result.total_cards.toLocaleString()} result
 							{result.total_cards === 1 ? "" : "s"} for <strong>{query}</strong>
