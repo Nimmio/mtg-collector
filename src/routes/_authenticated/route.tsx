@@ -21,7 +21,8 @@ const links = [
 	["/printings", "Printings"],
 	["/collection", "Collection"],
 	["/storage", "Storage"],
-	["/transactions", "Transactions"],
+  ["/transactions", "Transactions"],
+  ["/searchCards", "SearchCard"],
 ] as const;
 
 function AuthenticatedLayout() {
