@@ -4,6 +4,23 @@ import { type FormEvent, useState } from "react";
 import { cardSearchQueryOptions } from "#/card/queries/card.queries";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "#/components/ui/select";
+
+const sortOptions = [
+	{ value: "name", label: "Name" },
+	{ value: "released", label: "Release date" },
+	{ value: "set", label: "Set" },
+	{ value: "rarity", label: "Rarity" },
+	{ value: "usd", label: "USD price" },
+	{ value: "tix", label: "MTGO price" },
+	{ value: "edhrec", label: "EDHREC rank" },
+] as const;
 
 type SearchCard = {
 	id?: string;
@@ -30,8 +47,17 @@ export default function SearchCardView() {
 	const [input, setInput] = useState("");
 	const [query, setQuery] = useState("");
 	const [page, setPage] = useState(1);
+	const [sort, setSort] =
+		useState<(typeof sortOptions)[number]["value"]>("name");
+	const [direction, setDirection] = useState<"auto" | "asc" | "desc">("auto");
 	const search = useQuery({
-		...cardSearchQueryOptions({ query, unique: "cards", page }),
+		...cardSearchQueryOptions({
+			query,
+			unique: "cards",
+			page,
+			sort,
+			direction,
+		}),
 		select: (result) => result as SearchResult,
 	});
 
@@ -41,6 +67,16 @@ export default function SearchCardView() {
 		if (!nextQuery) return;
 		setPage(1);
 		setQuery(nextQuery);
+	}
+
+	function changeSort(value: string) {
+		setSort(value as (typeof sortOptions)[number]["value"]);
+		setPage(1);
+	}
+
+	function changeDirection(value: string) {
+		setDirection(value as "auto" | "asc" | "desc");
+		setPage(1);
 	}
 
 	const result = search.data;
@@ -78,6 +114,37 @@ export default function SearchCardView() {
 					{search.isFetching ? "Searching..." : "Search cards"}
 				</Button>
 			</form>
+
+			<div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+				<label className="text-sm font-medium" htmlFor="card-sort">
+					Sort by
+				</label>
+				<Select value={sort} onValueChange={changeSort}>
+					<SelectTrigger id="card-sort" className="w-full sm:w-48">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						{sortOptions.map((option) => (
+							<SelectItem key={option.value} value={option.value}>
+								{option.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<label className="text-sm font-medium" htmlFor="card-direction">
+					Order
+				</label>
+				<Select value={direction} onValueChange={changeDirection}>
+					<SelectTrigger id="card-direction" className="w-full sm:w-36">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="auto">Default</SelectItem>
+						<SelectItem value="asc">Ascending</SelectItem>
+						<SelectItem value="desc">Descending</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
 
 			{search.isError && (
 				<div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">

@@ -4,6 +4,10 @@ export const cardSearchInput = z.object({
 	query: z.string().trim().min(1).max(100),
 	unique: z.enum(["cards", "art", "prints"]).default("cards"),
 	page: z.number().int().min(1).max(100).default(1),
+	sort: z
+		.enum(["name", "set", "released", "rarity", "usd", "tix", "edhrec"])
+		.default("name"),
+	direction: z.enum(["auto", "asc", "desc"]).default("auto"),
 });
 
 export const scryfallCardSchema = z.object({

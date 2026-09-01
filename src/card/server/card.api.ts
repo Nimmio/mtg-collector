@@ -12,7 +12,7 @@ export const searchCards = createServerFn({ method: "GET" })
 	.validator(cardSearchInput)
 	.handler(async ({ data }) => {
 		const { redisGet, redisSet } = await import("../../redis.js");
-		const key = `scryfall:search:${data.unique}:${data.page}:${data.query.toLowerCase()}`;
+		const key = `scryfall:search:${data.unique}:${data.page}:${data.sort}:${data.direction}:${data.query.toLowerCase()}`;
 		const cached = await redisGet<SearchResponse>(key);
 		if (cached) return cached;
 
@@ -20,6 +20,8 @@ export const searchCards = createServerFn({ method: "GET" })
 			q: data.query,
 			unique: data.unique,
 			page: String(data.page),
+			order: data.sort,
+			dir: data.direction,
 		});
 		const response = await fetch(
 			`https://api.scryfall.com/cards/search?${params}`,
