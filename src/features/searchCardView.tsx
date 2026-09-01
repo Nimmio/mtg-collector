@@ -39,6 +39,8 @@ type SearchResult = {
 	data: SearchCard[];
 };
 
+const cardsPerPage = 175;
+
 function cardImage(card: SearchCard) {
 	return card.image_uris?.normal ?? card.card_faces?.[0]?.image_uris?.normal;
 }
@@ -80,6 +82,7 @@ export default function SearchCardView() {
 	}
 
 	const result = search.data;
+	const totalPages = result ? Math.ceil(result.total_cards / cardsPerPage) : 0;
 
 	return (
 		<section className="mx-auto max-w-7xl space-y-8">
@@ -151,6 +154,12 @@ export default function SearchCardView() {
 						{search.isFetching ? "Searching..." : "Search cards"}
 					</Button>
 				</form>
+				{search.isFetching && (
+					<p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground" role="status">
+						<span className="size-3 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden="true" />
+						Loading cards...
+					</p>
+				)}
 			</div>
 
 			{search.isError && (
@@ -217,8 +226,8 @@ export default function SearchCardView() {
 						</div>
 					)}
 
-					{(page > 1 || result.has_more) && (
-						<div className="flex justify-center gap-3">
+					{totalPages > 1 && (
+						<div className="flex flex-wrap items-center justify-center gap-3">
 							<Button
 								type="button"
 								variant="outline"
@@ -235,6 +244,23 @@ export default function SearchCardView() {
 							>
 								Next
 							</Button>
+							<Select
+								value={String(page)}
+								onValueChange={(value) => setPage(Number(value))}
+							>
+								<SelectTrigger className="w-32" aria-label="Select page">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{Array.from({ length: totalPages }, (_, index) => index + 1).map(
+										(pageNumber) => (
+											<SelectItem key={pageNumber} value={String(pageNumber)}>
+												Page {pageNumber}
+											</SelectItem>
+										),
+									)}
+								</SelectContent>
+							</Select>
 						</div>
 					)}
 				</div>
