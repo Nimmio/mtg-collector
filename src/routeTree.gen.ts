@@ -19,6 +19,7 @@ import { Route as AuthenticatedPrintingsRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSearchCardsRouteImport } from './routes/_authenticated/searchCards'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
 import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
+import { Route as AuthenticatedCardDetailsCardIdRouteImport } from './routes/_authenticated/cardDetails.$cardId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -72,6 +73,12 @@ const AuthenticatedTransactionsRoute =
     path: '/transactions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCardDetailsCardIdRoute =
+  AuthenticatedCardDetailsCardIdRouteImport.update({
+    id: '/cardDetails/$cardId',
+    path: '/cardDetails/$cardId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -88,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/searchCards': typeof AuthenticatedSearchCardsRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
+  '/cardDetails/$cardId': typeof AuthenticatedCardDetailsCardIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -100,6 +108,7 @@ export interface FileRoutesByTo {
   '/storage': typeof AuthenticatedStorageRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/': typeof AuthenticatedIndexRoute
+  '/cardDetails/$cardId': typeof AuthenticatedCardDetailsCardIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -114,6 +123,7 @@ export interface FileRoutesById {
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/cardDetails/$cardId': typeof AuthenticatedCardDetailsCardIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/searchCards'
     | '/storage'
     | '/transactions'
+    | '/cardDetails/$cardId'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/storage'
     | '/transactions'
     | '/'
+    | '/cardDetails/$cardId'
     | '/api/auth/$'
   id:
     | '__root__'
@@ -153,6 +165,7 @@ export interface FileRouteTypes {
     | '/_authenticated/storage'
     | '/_authenticated/transactions'
     | '/_authenticated/'
+    | '/_authenticated/cardDetails/$cardId'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -235,6 +248,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTransactionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/cardDetails/$cardId': {
+      id: '/_authenticated/cardDetails/$cardId'
+      path: '/cardDetails/$cardId'
+      fullPath: '/cardDetails/$cardId'
+      preLoaderRoute: typeof AuthenticatedCardDetailsCardIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -253,6 +273,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedCardDetailsCardIdRoute: typeof AuthenticatedCardDetailsCardIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -263,6 +284,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedCardDetailsCardIdRoute: AuthenticatedCardDetailsCardIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

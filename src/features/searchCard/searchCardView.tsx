@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { type FormEvent, useState } from "react";
 
 import { cardSearchQueryOptions } from "#/card/queries/card.queries";
@@ -155,8 +156,14 @@ export default function SearchCardView() {
 					</Button>
 				</form>
 				{search.isFetching && (
-					<p className="mt-3 flex items-center gap-2 text-sm text-muted-foreground" role="status">
-						<span className="size-3 animate-spin rounded-full border-2 border-primary border-t-transparent" aria-hidden="true" />
+					<p
+						className="mt-3 flex items-center gap-2 text-sm text-muted-foreground"
+						role="status"
+					>
+						<span
+							className="size-3 animate-spin rounded-full border-2 border-primary border-t-transparent"
+							aria-hidden="true"
+						/>
 						Loading cards...
 					</p>
 				)}
@@ -195,20 +202,44 @@ export default function SearchCardView() {
 										className="group space-y-3"
 										key={card.id ?? `${card.name}-${index}`}
 									>
-										<div className="aspect-5/7 overflow-hidden rounded-xl bg-muted shadow-sm ring-1 ring-border">
-											{image ? (
-												<img
-													src={image}
-													alt={card.name ?? "Magic card"}
-													loading="lazy"
-													className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-												/>
-											) : (
-												<div className="flex h-full items-center justify-center p-4 text-center text-sm text-muted-foreground">
-													No image available
+										{card.id ? (
+											<Link
+												to="/cardDetails/$cardId"
+												params={{ cardId: card.id }}
+												aria-label={`View details for ${card.name ?? "Magic card"}`}
+												className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+											>
+												<div className="aspect-5/7 overflow-hidden rounded-xl bg-muted shadow-sm ring-1 ring-border">
+													{image ? (
+														<img
+															src={image}
+															alt={card.name ?? "Magic card"}
+															loading="lazy"
+															className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+														/>
+													) : (
+														<div className="flex h-full items-center justify-center p-4 text-center text-sm text-muted-foreground">
+															No image available
+														</div>
+													)}
 												</div>
-											)}
-										</div>
+											</Link>
+										) : (
+											<div className="aspect-5/7 overflow-hidden rounded-xl bg-muted shadow-sm ring-1 ring-border">
+												{image ? (
+													<img
+														src={image}
+														alt={card.name ?? "Magic card"}
+														loading="lazy"
+														className="h-full w-full object-cover"
+													/>
+												) : (
+													<div className="flex h-full items-center justify-center p-4 text-center text-sm text-muted-foreground">
+														No image available
+													</div>
+												)}
+											</div>
+										)}
 										<div>
 											<h2 className="truncate font-medium" title={card.name}>
 												{card.name ?? "Unnamed card"}
@@ -252,13 +283,14 @@ export default function SearchCardView() {
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									{Array.from({ length: totalPages }, (_, index) => index + 1).map(
-										(pageNumber) => (
-											<SelectItem key={pageNumber} value={String(pageNumber)}>
-												Page {pageNumber}
-											</SelectItem>
-										),
-									)}
+									{Array.from(
+										{ length: totalPages },
+										(_, index) => index + 1,
+									).map((pageNumber) => (
+										<SelectItem key={pageNumber} value={String(pageNumber)}>
+											Page {pageNumber}
+										</SelectItem>
+									))}
 								</SelectContent>
 							</Select>
 						</div>

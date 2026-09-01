@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import SearchCardView from "#/features/searchCardView";
+import SearchCardView from "#/features/searchCard/searchCardView";
 
 export const Route = createFileRoute("/_authenticated/searchCards")({
 	component: RouteComponent,
