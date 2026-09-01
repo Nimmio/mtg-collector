@@ -1,6 +1,6 @@
+import { searchCards } from "#/card/server/card.api";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { searchCards } from "#/card/server/card.api";
 
 export const Route = createFileRoute("/_authenticated/cards")({
 	loader: async () => {

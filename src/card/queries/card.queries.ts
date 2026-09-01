@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import type { CardSearchInput } from "../card.schema.js";
-import { getCardByScryfallId, searchCards } from "../card.api.js";
+import { getCardByScryfallId, searchCards } from "../server/card.api.js";
 
 export const cardQueryKeys = {
 	all: ["cards"] as const,

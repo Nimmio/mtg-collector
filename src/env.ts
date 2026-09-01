@@ -5,7 +5,7 @@ export const env = createEnv({
 	server: {
 		SERVER_URL: z.string().url().optional(),
 		REDIS_URL: z.string().url().default("redis://localhost:6379"),
-		DATABASE_URL: z.string().url(),
+		DATABASE_URL: z.string().url().optional(),
 		SCRYFALL_USER_AGENT: z.string().min(1).default("mtg-collector/1.0"),
 	},
 
