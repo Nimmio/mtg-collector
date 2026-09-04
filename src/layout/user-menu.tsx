@@ -2,6 +2,12 @@ import { Link } from "@tanstack/react-router";
 
 import { authClient } from "#/lib/auth-client";
 
+function toggleTheme() {
+	const root = document.documentElement;
+	const dark = root.classList.toggle("dark");
+	localStorage.setItem("theme", dark ? "dark" : "light");
+}
+
 export function UserMenu() {
 	const session = authClient.useSession();
 	const user = session.data?.user;
@@ -14,6 +20,13 @@ export function UserMenu() {
 				<span className="text-muted-foreground transition-transform group-open:rotate-180">⌄</span>
 			</summary>
 			<div className="mt-1 grid gap-1 rounded-md border bg-background p-1 shadow-sm">
+				<button
+					type="button"
+					className="rounded px-3 py-2 text-left text-sm hover:bg-accent"
+					onClick={toggleTheme}
+				>
+					Toggle dark mode
+				</button>
 				<Link
 					to="/settings"
 					className="rounded px-3 py-2 text-sm hover:bg-accent"
