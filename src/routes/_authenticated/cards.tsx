@@ -69,7 +69,7 @@ function CardsPage() {
 			</div>
 			{result && <div className={view === "grid" ? `grid gap-3 ${gridColumns[columns as keyof typeof gridColumns]}` : "grid gap-2"}>{result.data.map((card, index) => {
 				const image = (card.image_uris as Record<string, string> | undefined)?.normal ?? ((card.card_faces as Array<{ image_uris?: Record<string, string> }> | undefined)?.[0]?.image_uris?.normal);
-				return <article key={String(card.id ?? index)} className={view === "grid" ? "overflow-hidden rounded-xl border bg-card" : "flex items-center gap-3 rounded-lg border bg-card p-3"}>{image && <img alt={String(card.name ?? "Card")} className={view === "grid" ? "aspect-[488/680] w-full object-cover" : "size-16 rounded object-cover"} loading="lazy" src={image} />}{view === "list" && <div className="min-w-0"><p className="truncate font-semibold">{String(card.name ?? "Unknown card")}</p><p className="text-sm text-muted-foreground">{String(card.mana_cost ?? "")}</p></div>}</article>;
+				return <article key={String(card.id ?? index)} className={view === "grid" ? "overflow-hidden rounded-xl border bg-card" : "flex items-center gap-3 rounded-lg border bg-card p-3"}>{image && <img alt={String(card.name ?? "Card")} className={view === "grid" ? "aspect-488/680 w-full object-cover" : "size-16 rounded object-cover"} loading="lazy" src={image} />}{view === "list" && <div className="min-w-0"><p className="truncate font-semibold">{String(card.name ?? "Unknown card")}</p><p className="text-sm text-muted-foreground">{String(card.mana_cost ?? "")}</p></div>}</article>;
 			})}</div>}
 		</div>
 	);
