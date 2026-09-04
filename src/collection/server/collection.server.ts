@@ -8,6 +8,7 @@ import {
 	deleteCollectionItem,
 	getCollectionItem,
 	listCollection,
+	listSetSummaries,
 	updateCollectionItem,
 } from "../prisma/collection.prisma.js";
 
@@ -22,6 +23,9 @@ const finish = z.enum(["nonfoil", "foil", "etched"]);
 
 export const getCollection = createServerFn({ method: "GET" }).handler(
 	async () => serializePrisma(await listCollection(await requireUserId())),
+);
+export const getSetSummaries = createServerFn({ method: "GET" }).handler(
+	async () => serializePrisma(await listSetSummaries(await requireUserId())),
 );
 export const getCollectionItemById = createServerFn({ method: "GET" })
 	.validator(z.object({ id: z.string() }))

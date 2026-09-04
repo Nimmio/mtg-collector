@@ -14,7 +14,7 @@ const links = [
 
 export function Sidebar() {
 	return (
-		<aside className="flex flex-col border-b bg-background p-4 md:min-h-svh md:w-64 md:border-r md:border-b-0">
+		<aside className="flex flex-col border-b bg-background p-4 md:h-svh md:w-64 md:shrink-0 md:overflow-y-auto md:border-r md:border-b-0">
 			<div className="mb-8 px-2 text-lg font-semibold">MTG Collector</div>
 			<nav className="grid gap-1">
 				{links.map(([to, label]) => (

@@ -20,6 +20,18 @@ type ScryfallSet = {
 	[key: string]: unknown;
 };
 
+export type ScryfallSetSummary = {
+	code: string;
+	name: string;
+	released_at?: string;
+	card_count: number;
+	icon_svg_uri?: string;
+	set_type?: string;
+	block?: string;
+	block_code?: string;
+	parent_set_code?: string;
+};
+
 let lastRequestAt = 0;
 let requestQueue = Promise.resolve();
 
@@ -73,6 +85,16 @@ export async function getScryfallSet(code: string) {
 	);
 	await redisSet(key, set, SET_TTL_SECONDS);
 	return set;
+}
+
+export async function listScryfallSets() {
+	const key = "scryfall:sets";
+	const cached = await redisGet<{ data: ScryfallSetSummary[] }>(key);
+	if (cached) return cached.data;
+
+	const result = await fetchScryfall<{ data: ScryfallSetSummary[] }>("/sets");
+	await redisSet(key, result, SET_TTL_SECONDS);
+	return result.data;
 }
 
 export async function getScryfallPrintings(oracleId: string) {
