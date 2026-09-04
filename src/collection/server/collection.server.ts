@@ -46,6 +46,19 @@ export const addCollectionItem = createServerFn({ method: "POST" })
 	.handler(async ({ data }) =>
 		serializePrisma(await createCollectionItem(await requireUserId(), data)),
 	);
+export const addCollectionItemByScryfallId = createServerFn({ method: "POST" })
+	.validator(z.object({ scryfallId: z.string() }))
+	.handler(async ({ data }) => {
+		const { prisma } = await import("../../db.js");
+		const printing = await prisma.printing.findUnique({ where: { scryfallId: data.scryfallId } });
+		if (!printing) throw new Error("This card is not available in the local card database yet.");
+		return serializePrisma(await createCollectionItem(await requireUserId(), {
+			printingId: printing.id,
+			quantity: 1,
+			finish: "nonfoil",
+			condition: "near_mint",
+		}));
+	});
 export const editCollectionItem = createServerFn({ method: "POST" })
 	.validator(
 		z.object({

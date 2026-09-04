@@ -3,11 +3,13 @@ import { Link } from "@tanstack/react-router";
 import { formatReleaseDate } from "./set-utils";
 import type { SetSummary } from "./set-types";
 
+const setCardsLink = (code: string) => ({ to: "/cards" as const, search: { set: code } });
+
 export function SetRow({ set, depth = 0 }: { set: SetSummary; depth?: number }) {
 	const completion = set.totalCards ? Math.min(100, Math.round((set.ownedCards / set.totalCards) * 100)) : 0;
 
 	return (
-		<Link to="/cards" search={{ set: set.code }} className={`relative grid gap-2 border-b px-4 py-3 last:border-b-0 hover:bg-muted/40 focus-visible:bg-muted/40 sm:grid-cols-[minmax(0,1fr)_8rem_8rem_12rem] sm:items-center sm:gap-4 ${depth ? "pl-10" : ""}`} style={depth ? { paddingLeft: `${depth * 24 + 16}px` } : undefined}>
+		<Link {...setCardsLink(set.code)} className={`relative grid gap-2 border-b px-4 py-3 last:border-b-0 hover:bg-muted/40 focus-visible:bg-muted/40 sm:grid-cols-[minmax(0,1fr)_8rem_8rem_12rem] sm:items-center sm:gap-4 ${depth ? "pl-10" : ""}`} style={depth ? { paddingLeft: `${depth * 24 + 16}px` } : undefined}>
 			{depth > 0 && <span aria-hidden="true" className="absolute top-0 h-1/2 w-4 border-b border-l border-muted-foreground/20" style={{ left: `${depth * 24}px` }} />}
 			<div className="flex min-w-0 items-center gap-3">
 				<SetIcon set={set} />
