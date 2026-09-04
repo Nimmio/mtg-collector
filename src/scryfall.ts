@@ -74,3 +74,9 @@ export async function getScryfallSet(code: string) {
 	await redisSet(key, set, SET_TTL_SECONDS);
 	return set;
 }
+
+export async function getScryfallPrintings(oracleId: string) {
+	return fetchScryfall<{ data: ScryfallCard[] }>(
+		`/cards/search?q=oracle_id%3A${encodeURIComponent(oracleId)}&unique=prints&order=released&dir=desc`,
+	);
+}

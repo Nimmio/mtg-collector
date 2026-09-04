@@ -52,3 +52,10 @@ export const getCardByScryfallId = createServerFn({ method: "GET" })
 			string | object | undefined
 		>;
 	});
+
+export const getCardPrintings = createServerFn({ method: "GET" })
+	.validator(cardSearchInput.pick({ query: true }))
+	.handler(async ({ data }) => {
+		const { getScryfallPrintings } = await import("../../scryfall.js");
+		return JSON.parse(JSON.stringify(await getScryfallPrintings(data.query)));
+	});
