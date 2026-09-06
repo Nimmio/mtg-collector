@@ -8,6 +8,7 @@ import {
 	deleteCollectionItem,
 	getCollectionItem,
 	listCollection,
+	listCollectionItemsForPrinting,
 	listSetSummaries,
 	updateCollectionItem,
 } from "../prisma/collection.prisma.js";
@@ -32,6 +33,16 @@ export const getCollectionItemById = createServerFn({ method: "GET" })
 	.handler(async ({ data }) =>
 		serializePrisma(await getCollectionItem(await requireUserId(), data.id)),
 	);
+export const getCollectionItemsForPrinting = createServerFn({ method: "GET" })
+	.validator(z.object({ printingId: z.string() }))
+	.handler(async ({ data }) =>
+		serializePrisma(
+			await listCollectionItemsForPrinting(
+				await requireUserId(),
+				data.printingId,
+			),
+		),
+	);
 export const addCollectionItem = createServerFn({ method: "POST" })
 	.validator(
 		z.object({
@@ -47,32 +58,47 @@ export const addCollectionItem = createServerFn({ method: "POST" })
 		serializePrisma(await createCollectionItem(await requireUserId(), data)),
 	);
 export const addCollectionItemByScryfallId = createServerFn({ method: "POST" })
-	.validator(z.object({ scryfallId: z.string() }))
+	.validator(
+		z.object({
+			scryfallId: z.string(),
+			finish: z.enum(["nonfoil", "foil"]).default("nonfoil"),
+		}),
+	)
 	.handler(async ({ data }) => {
 		const { prisma } = await import("../../db.js");
-		const printing = await prisma.printing.findUnique({ where: { scryfallId: data.scryfallId } });
-		if (!printing) throw new Error("This card is not available in the local card database yet.");
-		return serializePrisma(await createCollectionItem(await requireUserId(), {
-			printingId: printing.id,
-			quantity: 1,
-			finish: "nonfoil",
-			condition: "near_mint",
-		}));
+		const printing = await prisma.printing.findUnique({
+			where: { scryfallId: data.scryfallId },
+		});
+		if (!printing)
+			throw new Error(
+				"This card is not available in the local card database yet.",
+			);
+		return serializePrisma(
+			await createCollectionItem(await requireUserId(), {
+				printingId: printing.id,
+				quantity: 1,
+				finish: data.finish,
+				condition: "near_mint",
+			}),
+		);
 	});
 export const editCollectionItem = createServerFn({ method: "POST" })
 	.validator(
 		z.object({
 			id: z.string(),
-			quantity: z.number().int().positive().optional(),
+			quantity: z.number().int().nonnegative().optional(),
 			locationId: z.string().nullable().optional(),
 			notes: z.string().max(5000).optional(),
 			isForTrade: z.boolean().optional(),
 			isForSale: z.boolean().optional(),
 		}),
 	)
-	.handler(async ({ data }) =>
-		updateCollectionItem(await requireUserId(), data.id, data),
-	);
+	.handler(async ({ data }) => {
+		if (data.quantity === 0) {
+			return deleteCollectionItem(await requireUserId(), data.id);
+		}
+		return updateCollectionItem(await requireUserId(), data.id, data);
+	});
 export const removeCollectionItem = createServerFn({ method: "POST" })
 	.validator(z.object({ id: z.string() }))
 	.handler(async ({ data }) =>

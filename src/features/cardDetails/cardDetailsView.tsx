@@ -1,14 +1,26 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 
 import {
 	cardPrintingsQueryOptions,
 	cardQueryOptions,
 } from "#/card/queries/card.queries";
+import {
+	addCollectionItemByScryfallId,
+	editCollectionItem,
+	getCollectionItemsForPrinting,
+} from "#/collection/collection.api";
+import { useNotification } from "#/components/notification";
 import { Button } from "#/components/ui/button";
 
-type CardDetailsViewProps = { id: string };
+type CardDetailsViewProps = {
+	id: string;
+	onSynchronize?: (synchronize: () => Promise<boolean>) => void;
+	onBack?: () => void;
+	showNavigation?: boolean;
+	showVersions?: boolean;
+};
 
 type Card = {
 	id: string;
@@ -47,11 +59,43 @@ function imageFor(card: Card, face?: NonNullable<Card["card_faces"]>[number]) {
 	);
 }
 
-const CardDetailsView = ({ id }: CardDetailsViewProps) => {
-	const goBackToSearch = () => window.history.back();
+const CardDetailsView = ({
+	id,
+	onSynchronize,
+	onBack,
+	showNavigation = true,
+	showVersions: showVersionsEnabled = true,
+}: CardDetailsViewProps) => {
 	const navigate = useNavigate();
-	const [selectedPrinting, setSelectedPrinting] = useState<Card | null>(null);
+	const [selectedPrinting] = useState<Card | null>(null);
 	const [showVersions, setShowVersions] = useState(false);
+	const [counts, setCounts] = useState({ nonfoil: 0, foil: 0 });
+	const [countsLoadedFor, setCountsLoadedFor] = useState<string | null>(null);
+	const [savingFinish, setSavingFinish] = useState<string | null>(null);
+	const [countError, setCountError] = useState<string | null>(null);
+	const [draftCounts, setDraftCounts] = useState({ nonfoil: "", foil: "" });
+	const { showNotification } = useNotification();
+	const synchronizeInputs = async () => {
+		let success = true;
+		for (const finish of ["nonfoil", "foil"] as const) {
+			const value = Math.max(0, Number(draftCounts[finish]) || 0);
+			if (value !== counts[finish]) {
+				await saveCount(finish, value);
+				if (countError) success = false;
+			}
+		}
+		return success;
+	};
+	onSynchronize?.(synchronizeInputs);
+	const goBackToSearch = () => {
+		if (onBack) {
+			void synchronizeInputs().then((success) => {
+				if (success) onBack();
+			});
+			return;
+		}
+		window.history.back();
+	};
 	const card = useQuery({
 		...cardQueryOptions(id),
 		select: (result) => result as Card,
@@ -60,12 +104,79 @@ const CardDetailsView = ({ id }: CardDetailsViewProps) => {
 		...cardPrintingsQueryOptions(card.data?.oracle_id ?? ""),
 		select: (result) => result.data as Printing[],
 	});
+	const loadCollectionCounts = async (printingId: string) => {
+		const items = await getCollectionItemsForPrinting({ data: { printingId } });
+		setCounts({
+			nonfoil: items
+				.filter((item) => item.finish === "nonfoil")
+				.reduce((sum, item) => sum + item.quantity, 0),
+			foil: items
+				.filter((item) => item.finish === "foil")
+				.reduce((sum, item) => sum + item.quantity, 0),
+		});
+		setDraftCounts({
+			nonfoil: String(
+				items
+					.filter((item) => item.finish === "nonfoil")
+					.reduce((sum, item) => sum + item.quantity, 0),
+			),
+			foil: String(
+				items
+					.filter((item) => item.finish === "foil")
+					.reduce((sum, item) => sum + item.quantity, 0),
+			),
+		});
+		setCountsLoadedFor(printingId);
+	};
+
+	const saveCount = async (finish: "nonfoil" | "foil", value: number) => {
+		setSavingFinish(finish);
+		setCountError(null);
+		try {
+			const items = await getCollectionItemsForPrinting({
+				data: { printingId: displayedCard.id },
+			});
+			const item = items.find((candidate) => candidate.finish === finish);
+			if (item) {
+				await editCollectionItem({ data: { id: item.id, quantity: value } });
+				showNotification(
+					`${finish === "foil" ? "Foil" : "Normal"} card value updated.`,
+				);
+			} else if (value > 0) {
+				await addCollectionItemByScryfallId({
+					data: { scryfallId: displayedCard.id, finish },
+				});
+				if (value > 1) {
+					const refreshed = await getCollectionItemsForPrinting({
+						data: { printingId: displayedCard.id },
+					});
+					const created = refreshed.find(
+						(candidate) => candidate.finish === finish,
+					);
+					if (created)
+						await editCollectionItem({
+							data: { id: created.id, quantity: value },
+						});
+				}
+				showNotification(
+					`${finish === "foil" ? "Foil" : "Normal"} card added.`,
+				);
+			}
+			setCounts((current) => ({ ...current, [finish]: value }));
+		} catch (error) {
+			setCountError(
+				error instanceof Error
+					? error.message
+					: "Unable to save collection count.",
+			);
+		} finally {
+			setSavingFinish(null);
+		}
+	};
 
 	if (card.isPending)
 		return (
-			<p role="status" className="text-muted-foreground">
-				Loading card details...
-			</p>
+			<output className="text-muted-foreground">Loading card details...</output>
 		);
 	if (card.isError)
 		return (
@@ -75,90 +186,115 @@ const CardDetailsView = ({ id }: CardDetailsViewProps) => {
 						? card.error.message
 						: "Could not load this card."}
 				</p>
-				<Button
+				{showNavigation && <Button
 					variant="outline"
 					onClick={goBackToSearch}
 					className="cursor-pointer"
 				>
 					Back to search
-				</Button>
+				</Button>}
 			</div>
 		);
 
 	const data = card.data;
-	const printingOptions = printings.data?.filter((printing) => printing.id !== data.id) ?? [];
+	const printingOptions =
+		printings.data?.filter((printing) => printing.id !== data.id) ?? [];
 	const displayedCard = selectedPrinting ?? data;
-	const faces = displayedCard.card_faces?.length ? displayedCard.card_faces : [undefined];
+	const faces = displayedCard.card_faces?.length
+		? displayedCard.card_faces
+		: [undefined];
+	if (countsLoadedFor !== displayedCard.id) {
+		void loadCollectionCounts(displayedCard.id);
+	}
 	return (
 		<section className="mx-auto max-w-5xl space-y-6">
-			<button
+			{showNavigation && <button
 				type="button"
 				onClick={goBackToSearch}
 				className="cursor-pointer text-sm text-muted-foreground hover:text-foreground"
 			>
 				← Back to search
-			</button>
+			</button>}
 			<div className="grid gap-8 md:grid-cols-[minmax(16rem,24rem)_1fr]">
 				<div className="min-w-0 self-start">
 					<div className="flex flex-wrap gap-4">
-					{faces.map((face, index) => {
-						const image = imageFor(displayedCard, face);
-						return image ? (
-							<img
-								key={image}
-								src={image}
-								alt={face?.name ?? displayedCard.name ?? "Magic card"}
-								className="w-full max-w-sm rounded-2xl shadow-lg ring-1 ring-border"
-							/>
-						) : (
-							<div key={index} className="flex aspect-5/7 w-full max-w-sm items-center justify-center rounded-2xl bg-muted text-muted-foreground">
-								No image available
-							</div>
-						);
-					})}
+						{faces.map((face, index) => {
+							const image = imageFor(displayedCard, face);
+							return image ? (
+								<img
+									key={image}
+									src={image}
+									alt={face?.name ?? displayedCard.name ?? "Magic card"}
+									className="w-full max-w-sm rounded-2xl shadow-lg ring-1 ring-border"
+								/>
+							) : (
+								<div
+									key={image ?? `face-${index}`}
+									className="flex aspect-5/7 w-full max-w-sm items-center justify-center rounded-2xl bg-muted text-muted-foreground"
+								>
+									No image available
+								</div>
+							);
+						})}
 					</div>
 				</div>
 				<div className="space-y-5">
-					<div className="space-y-3">
+					{showVersionsEnabled && <div className="space-y-3">
 						<button
 							type="button"
 							disabled={printings.isPending || printingOptions.length === 0}
 							onClick={() => setShowVersions((visible) => !visible)}
 							className="rounded-md border px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
 						>
-							{printings.isPending ? "Loading versions..." : showVersions ? "Hide versions" : "Show versions"}
+							{printings.isPending
+								? "Loading versions..."
+								: showVersions
+									? "Hide versions"
+									: "Show versions"}
 						</button>
 						{showVersions && printingOptions.length > 0 && (
 							<div className="max-h-[32rem] overflow-y-auto rounded-xl border bg-card p-3">
 								<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-								{printingOptions.map((printing) => (
-									<button
-										key={printing.id}
-										type="button"
-										className="overflow-hidden rounded-lg border text-left text-sm hover:bg-muted"
-										onClick={() => navigate({ to: "/cardDetails/$cardId", params: { cardId: printing.id } })}
-									>
-										<div className="aspect-[5/7] w-full bg-muted">
-											{imageFor(printing) ? (
-												<img
-													src={imageFor(printing)}
-													alt={printing.name ?? "Card printing"}
-													className="h-full w-full object-cover"
-												/>
-											) : (
-												<div className="flex h-full items-center justify-center px-2 text-center text-xs text-muted-foreground">No image</div>
-											)}
-										</div>
-										<div className="space-y-1 p-2">
-											<p className="truncate font-medium">{printing.set_name ?? printing.set}</p>
-											<p className="truncate text-xs text-muted-foreground">{printing.collector_number} · {printing.released_at ?? "Unknown"}</p>
-										</div>
-									</button>
-								))}
+									{printingOptions.map((printing) => (
+										<button
+											key={printing.id}
+											type="button"
+											className="overflow-hidden rounded-lg border text-left text-sm hover:bg-muted"
+											onClick={() =>
+												navigate({
+													to: "/cardDetails/$cardId",
+													params: { cardId: printing.id },
+												})
+											}
+										>
+											<div className="aspect-[5/7] w-full bg-muted">
+												{imageFor(printing) ? (
+													<img
+														src={imageFor(printing)}
+														alt={printing.name ?? "Card printing"}
+														className="h-full w-full object-cover"
+													/>
+												) : (
+													<div className="flex h-full items-center justify-center px-2 text-center text-xs text-muted-foreground">
+														No image
+													</div>
+												)}
+											</div>
+											<div className="space-y-1 p-2">
+												<p className="truncate font-medium">
+													{printing.set_name ?? printing.set}
+												</p>
+												<p className="truncate text-xs text-muted-foreground">
+													{printing.collector_number} ·{" "}
+													{printing.released_at ?? "Unknown"}
+												</p>
+											</div>
+										</button>
+									))}
 								</div>
 							</div>
 						)}
-					</div>
+					</div>}
 					<header>
 						<h1 className="text-4xl font-semibold tracking-tight">
 							{displayedCard.name}
@@ -167,6 +303,31 @@ const CardDetailsView = ({ id }: CardDetailsViewProps) => {
 							{displayedCard.set_name} · {displayedCard.collector_number}
 						</p>
 					</header>
+					<div className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2">
+						{(["nonfoil", "foil"] as const).map((finish) => (
+							<label className="space-y-1 text-sm" key={finish}>
+								<span className="font-medium">
+									{finish === "foil" ? "Foil cards" : "Normal cards"}
+								</span>
+								<input
+									className="h-9 w-full rounded-md border bg-background px-3"
+									disabled={savingFinish === finish}
+									min="0"
+									type="number"
+									value={draftCounts[finish]}
+									onChange={(event) =>
+										setDraftCounts((current) => ({
+											...current,
+											[finish]: event.target.value,
+										}))
+									}
+								/>
+							</label>
+						))}
+					</div>
+					{countError && (
+						<p className="text-sm text-destructive">{countError}</p>
+					)}
 					<div className="grid gap-3 rounded-xl border bg-card p-4 text-sm sm:grid-cols-2">
 						<p>
 							<strong>Set:</strong> {displayedCard.set?.toUpperCase()}
@@ -175,19 +336,32 @@ const CardDetailsView = ({ id }: CardDetailsViewProps) => {
 							<strong>Rarity:</strong> {displayedCard.rarity}
 						</p>
 						<p>
-							<strong>Released:</strong> {displayedCard.released_at ?? "Unknown"}
+							<strong>Released:</strong>{" "}
+							{displayedCard.released_at ?? "Unknown"}
 						</p>
 						<p>
 							<strong>Artist:</strong> {displayedCard.artist ?? "Unknown"}
 						</p>
 					</div>
 					{faces.map((face, index) => (
-						<div key={index} className="space-y-2">
-							{face?.name && <h2 className="text-xl font-semibold">{face.name}</h2>}
-							<p className="font-medium">{face?.mana_cost ?? displayedCard.mana_cost ?? ""}</p>
-							<p className="text-muted-foreground">{face?.type_line ?? displayedCard.type_line}</p>
-							<p className="whitespace-pre-line">{face?.oracle_text ?? displayedCard.oracle_text}</p>
-							{!face && displayedCard.power && <p className="text-right font-medium">{displayedCard.power}/{displayedCard.toughness}</p>}
+						<div key={face?.name ?? `face-${index}`} className="space-y-2">
+							{face?.name && (
+								<h2 className="text-xl font-semibold">{face.name}</h2>
+							)}
+							<p className="font-medium">
+								{face?.mana_cost ?? displayedCard.mana_cost ?? ""}
+							</p>
+							<p className="text-muted-foreground">
+								{face?.type_line ?? displayedCard.type_line}
+							</p>
+							<p className="whitespace-pre-line">
+								{face?.oracle_text ?? displayedCard.oracle_text}
+							</p>
+							{!face && displayedCard.power && (
+								<p className="text-right font-medium">
+									{displayedCard.power}/{displayedCard.toughness}
+								</p>
+							)}
 						</div>
 					))}
 				</div>

@@ -62,6 +62,7 @@ async function fetchScryfall<T>(path: string): Promise<T> {
 	return (await response.json()) as T;
 }
 
+/** Fetches a card by Scryfall ID or exact name, using the Redis cache when possible. */
 export async function getScryfallCard(idOrName: string) {
 	const key = `scryfall:card:${idOrName.toLowerCase()}`;
 	const cached = await redisGet<ScryfallCard>(key);
@@ -75,6 +76,7 @@ export async function getScryfallCard(idOrName: string) {
 	return card;
 }
 
+/** Fetches a set by code, using the Redis cache when possible. */
 export async function getScryfallSet(code: string) {
 	const key = `scryfall:set:${code.toLowerCase()}`;
 	const cached = await redisGet<ScryfallSet>(key);
@@ -87,6 +89,7 @@ export async function getScryfallSet(code: string) {
 	return set;
 }
 
+/** Lists all Scryfall sets, using the Redis cache when possible. */
 export async function listScryfallSets() {
 	const key = "scryfall:sets";
 	const cached = await redisGet<{ data: ScryfallSetSummary[] }>(key);
@@ -97,6 +100,7 @@ export async function listScryfallSets() {
 	return result.data;
 }
 
+/** Fetches all printings associated with an oracle ID. */
 export async function getScryfallPrintings(oracleId: string) {
 	return fetchScryfall<{ data: ScryfallCard[] }>(
 		`/cards/search?q=oracle_id%3A${encodeURIComponent(oracleId)}&unique=prints&order=released&dir=desc`,

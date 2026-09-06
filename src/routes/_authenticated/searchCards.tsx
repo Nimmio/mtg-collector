@@ -7,8 +7,7 @@ export const Route = createFileRoute("/_authenticated/searchCards")({
 		query: typeof search.query === "string" ? search.query : "",
 		page: typeof search.page === "number" ? search.page : 1,
 		sort: typeof search.sort === "string" ? search.sort : "name",
-		direction:
-			typeof search.direction === "string" ? search.direction : "auto",
+		direction: typeof search.direction === "string" ? search.direction : "auto",
 	}),
 	component: RouteComponent,
 });

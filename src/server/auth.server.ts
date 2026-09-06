@@ -2,6 +2,7 @@ import { getRequest } from "@tanstack/react-start/server";
 import { prisma } from "../db.js";
 import { auth } from "../lib/auth.js";
 
+/** Returns the authenticated user ID and ensures a matching local user exists. */
 export async function requireUserId() {
 	const session = await auth.api.getSession({ headers: getRequest().headers });
 	if (!session?.user.id) throw new Error("Authentication required");

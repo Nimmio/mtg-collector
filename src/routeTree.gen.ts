@@ -17,6 +17,7 @@ import { Route as AuthenticatedCardsRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedCollectionRouteImport } from './routes/_authenticated/collection'
 import { Route as AuthenticatedPrintingsRouteImport } from './routes/_authenticated/printings'
 import { Route as AuthenticatedSearchCardsRouteImport } from './routes/_authenticated/searchCards'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
 import { Route as AuthenticatedTransactionsRouteImport } from './routes/_authenticated/transactions'
 import { Route as AuthenticatedCardDetailsCardIdRouteImport } from './routes/_authenticated/cardDetails.$cardId'
@@ -62,6 +63,11 @@ const AuthenticatedSearchCardsRoute =
     path: '/searchCards',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedStorageRoute = AuthenticatedStorageRouteImport.update({
   id: '/storage',
   path: '/storage',
@@ -93,6 +99,7 @@ export interface FileRoutesByFullPath {
   '/collection': typeof AuthenticatedCollectionRoute
   '/printings': typeof AuthenticatedPrintingsRoute
   '/searchCards': typeof AuthenticatedSearchCardsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/cardDetails/$cardId': typeof AuthenticatedCardDetailsCardIdRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/collection': typeof AuthenticatedCollectionRoute
   '/printings': typeof AuthenticatedPrintingsRoute
   '/searchCards': typeof AuthenticatedSearchCardsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/transactions': typeof AuthenticatedTransactionsRoute
   '/': typeof AuthenticatedIndexRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/_authenticated/collection': typeof AuthenticatedCollectionRoute
   '/_authenticated/printings': typeof AuthenticatedPrintingsRoute
   '/_authenticated/searchCards': typeof AuthenticatedSearchCardsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
   '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/collection'
     | '/printings'
     | '/searchCards'
+    | '/settings'
     | '/storage'
     | '/transactions'
     | '/cardDetails/$cardId'
@@ -148,6 +158,7 @@ export interface FileRouteTypes {
     | '/collection'
     | '/printings'
     | '/searchCards'
+    | '/settings'
     | '/storage'
     | '/transactions'
     | '/'
@@ -162,6 +173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/collection'
     | '/_authenticated/printings'
     | '/_authenticated/searchCards'
+    | '/_authenticated/settings'
     | '/_authenticated/storage'
     | '/_authenticated/transactions'
     | '/_authenticated/'
@@ -234,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSearchCardsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/storage': {
       id: '/_authenticated/storage'
       path: '/storage'
@@ -270,6 +289,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCollectionRoute: typeof AuthenticatedCollectionRoute
   AuthenticatedPrintingsRoute: typeof AuthenticatedPrintingsRoute
   AuthenticatedSearchCardsRoute: typeof AuthenticatedSearchCardsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
   AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -281,6 +301,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCollectionRoute: AuthenticatedCollectionRoute,
   AuthenticatedPrintingsRoute: AuthenticatedPrintingsRoute,
   AuthenticatedSearchCardsRoute: AuthenticatedSearchCardsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
   AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,

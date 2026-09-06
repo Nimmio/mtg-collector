@@ -12,6 +12,7 @@ type SetControlsProps = {
 	onSortChange: (value: SortMode) => void;
 };
 
+/** Provides search, set-type, and sort controls for the set table. */
 export function SetControls({
 	sets,
 	search,
@@ -21,7 +22,9 @@ export function SetControls({
 	onTypeChange,
 	onSortChange,
 }: SetControlsProps) {
-	const types = [...new Set(sets.map((set) => set.setType).filter(Boolean))].sort();
+	const types = [
+		...new Set(sets.map((set) => set.setType).filter(Boolean)),
+	].sort();
 
 	return (
 		<div className="flex flex-col gap-3 rounded-xl border bg-card p-3 sm:flex-row sm:items-center">
@@ -37,9 +40,17 @@ export function SetControls({
 			</label>
 			<Select label="Set type" onChange={onTypeChange} value={type}>
 				<option value="all">All set types</option>
-				{types.map((value) => <option key={value} value={value ?? ""}>{value}</option>)}
+				{types.map((value) => (
+					<option key={value} value={value ?? ""}>
+						{value}
+					</option>
+				))}
 			</Select>
-			<Select label="Sort" onChange={(value) => onSortChange(value as SortMode)} value={sort}>
+			<Select
+				label="Sort"
+				onChange={(value) => onSortChange(value as SortMode)}
+				value={sort}
+			>
 				<option value="release">Release date</option>
 				<option value="name">Name</option>
 				<option value="cards">Number of cards</option>
@@ -49,7 +60,12 @@ export function SetControls({
 	);
 }
 
-function Select({ children, label, onChange, value }: {
+function Select({
+	children,
+	label,
+	onChange,
+	value,
+}: {
 	children: ReactNode;
 	label: string;
 	onChange: (value: string) => void;
@@ -58,7 +74,12 @@ function Select({ children, label, onChange, value }: {
 	return (
 		<label className="relative shrink-0">
 			<span className="sr-only">{label}</span>
-			<select aria-label={label} className="h-10 w-full appearance-none rounded-md border bg-background py-2 pl-3 pr-9 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto" onChange={(event) => onChange(event.target.value)} value={value}>
+			<select
+				aria-label={label}
+				className="h-10 w-full appearance-none rounded-md border bg-background py-2 pl-3 pr-9 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
+				onChange={(event) => onChange(event.target.value)}
+				value={value}
+			>
 				{children}
 			</select>
 			<ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />

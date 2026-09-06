@@ -1,4 +1,4 @@
-// The mapper changes Decimal leaves while preserving the inferred object shape.
+/** Recursively converts Prisma Decimal values into JSON-safe numbers. */
 // biome-ignore lint/suspicious/noExplicitAny: required to expose the mapped serializable shape
 export function serializePrisma<T>(value: T): any {
 	if (value && typeof value === "object" && "toNumber" in value) {

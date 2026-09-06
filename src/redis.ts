@@ -35,6 +35,7 @@ export function getRedis(): Promise<RedisClient> {
 	return globalThis.__redisConnection;
 }
 
+/** Reads and parses a cached JSON value, treating Redis failures as cache misses. */
 export async function redisGet<T>(key: string): Promise<T | null> {
 	try {
 		const redis = await getRedis();
@@ -46,6 +47,7 @@ export async function redisGet<T>(key: string): Promise<T | null> {
 	}
 }
 
+/** Stores a JSON value with a caller-provided expiration time. */
 export async function redisSet<T>(key: string, value: T, ttlSeconds: number) {
 	try {
 		const redis = await getRedis();

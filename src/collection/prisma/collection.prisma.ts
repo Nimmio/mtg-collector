@@ -22,15 +22,22 @@ export async function listSetSummaries(userId: string) {
 			orderBy: { _min: { releasedAt: "desc" } },
 		}),
 		prisma.collectionItem.groupBy({
-			by: ["printingId"],
+			by: ["printingId", "finish"],
 			where: { userId },
 			_sum: { quantity: true },
 		}),
 	]);
 
-	const ownedByPrinting = new Map(
-		owned.map((item) => [item.printingId, item._sum.quantity ?? 0]),
-	);
+	const ownedByPrinting = new Map<string, { cards: number; copies: number }>();
+	for (const item of owned) {
+		const current = ownedByPrinting.get(item.printingId) ?? {
+			cards: 0,
+			copies: 0,
+		};
+		current.cards = 1;
+		current.copies += item._sum.quantity ?? 0;
+		ownedByPrinting.set(item.printingId, current);
+	}
 	const printings = await prisma.printing.findMany({
 		where: { id: { in: [...ownedByPrinting.keys()] } },
 		select: { id: true, setCode: true },
@@ -39,8 +46,9 @@ export async function listSetSummaries(userId: string) {
 
 	for (const printing of printings) {
 		const current = ownedBySet.get(printing.setCode) ?? { cards: 0, copies: 0 };
-		current.cards += 1;
-		current.copies += ownedByPrinting.get(printing.id) ?? 0;
+		const ownedPrinting = ownedByPrinting.get(printing.id);
+		current.cards += ownedPrinting?.cards ?? 0;
+		current.copies += ownedPrinting?.copies ?? 0;
 		ownedBySet.set(printing.setCode, current);
 	}
 
@@ -58,6 +66,16 @@ export function getCollectionItem(userId: string, id: string) {
 	return prisma.collectionItem.findFirst({
 		where: { id, userId },
 		include: collectionInclude,
+	});
+}
+
+export function listCollectionItemsForPrinting(
+	userId: string,
+	printingId: string,
+) {
+	return prisma.collectionItem.findMany({
+		where: { userId, printingId },
+		select: { id: true, finish: true, quantity: true },
 	});
 }
 

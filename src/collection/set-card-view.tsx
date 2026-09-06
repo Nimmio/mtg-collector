@@ -1,17 +1,25 @@
-import { Check, Grid2X2, List, Plus } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { addCollectionItemByScryfallId } from "./collection.api";
+import { useNotification } from "#/components/notification";
+import { CardDetailsModal } from "./card-details-modal";
+import {
+	addCollectionItemByScryfallId,
+	getOwnedScryfallIds,
+} from "./collection.api";
+import { SetCardControls } from "./set-card-controls";
+import { SetCardHeader } from "./set-card-header";
+import { SetCardItem } from "./set-card-item";
 import type { SetSummary } from "./set-types";
-import { formatReleaseDate } from "./set-utils";
 
 type Card = Record<string, string | object | undefined>;
-type CardResult = {
+export type CardResult = {
 	total_cards: number;
 	data: Card[];
 	setInfo?: SetSummary;
-	ownedScryfallIds?: string[];
+	ownedCards?: Array<{ scryfallId: string; finish: string; quantity: number }>;
 };
 
+/** Displays cards in a set and coordinates collection updates and card details. */
 export function SetCardView({
 	set,
 	result,
@@ -20,12 +28,18 @@ export function SetCardView({
 	result: CardResult;
 }) {
 	const [view, setView] = useState<"grid" | "list">("grid");
+	const [editMode, setEditMode] = useState(false);
 	const [columns, setColumns] = useState("5");
-	const [addedCards, setAddedCards] = useState<Set<string>>(
-		() => new Set(result.ownedScryfallIds ?? []),
-	);
+	const [ownedCards, setOwnedCards] = useState(() => result.ownedCards ?? []);
 	const [addingCards, setAddingCards] = useState<Set<string>>(new Set());
 	const [addError, setAddError] = useState<string | null>(null);
+	const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+	const navigate = useNavigate();
+	const { showNotification } = useNotification();
+	const ownedCount = new Set(ownedCards.map((item) => item.scryfallId)).size;
+	const completion = result.total_cards
+		? Math.round((ownedCount / result.total_cards) * 100)
+		: 0;
 	const gridColumns = {
 		"3": "grid-cols-2 sm:grid-cols-3 lg:grid-cols-3",
 		"4": "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
@@ -34,12 +48,21 @@ export function SetCardView({
 		"7": "grid-cols-2 sm:grid-cols-3 lg:grid-cols-7",
 	} as const;
 
-	const addCard = async (cardId: string) => {
+	const addCard = async (cardId: string, finish: "nonfoil" | "foil") => {
 		setAddError(null);
-		setAddingCards((current) => new Set(current).add(cardId));
+		const actionKey = `${cardId}:${finish}`;
+		setAddingCards((current) => new Set(current).add(actionKey));
 		try {
-			await addCollectionItemByScryfallId({ data: { scryfallId: cardId } });
-			setAddedCards((current) => new Set(current).add(cardId));
+			await addCollectionItemByScryfallId({
+				data: { scryfallId: cardId, finish },
+			});
+			setOwnedCards((current) => [
+				...current,
+				{ scryfallId: cardId, finish, quantity: 1 },
+			]);
+			showNotification(
+				`${finish === "foil" ? "Foil" : "Normal"} card added to your collection.`,
+			);
 		} catch (error) {
 			setAddError(
 				error instanceof Error
@@ -49,97 +72,41 @@ export function SetCardView({
 		} finally {
 			setAddingCards((current) => {
 				const next = new Set(current);
-				next.delete(cardId);
+				next.delete(actionKey);
 				return next;
 			});
 		}
 	};
 
+	const openCardDetails = (cardId: string) => {
+		if (window.matchMedia("(max-width: 639px)").matches) {
+			void navigate({ to: "/cardDetails/$cardId", params: { cardId } });
+			return;
+		}
+		setSelectedCardId(cardId);
+	};
+
+	const closeCardDetails = async () => {
+		setSelectedCardId(null);
+		setOwnedCards(await getOwnedScryfallIds({ data: { setCode: set } }));
+	};
+
 	return (
 		<div className="page-wrap space-y-6 py-2">
-			<header className="rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
-				<div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-					<div className="flex min-w-0 items-center gap-4">
-						{result.setInfo?.iconUrl && (
-							<img
-								alt=""
-								className="size-16 shrink-0 object-contain dark:invert"
-								src={result.setInfo.iconUrl}
-							/>
-						)}
-						<div className="min-w-0">
-							<p className="island-kicker">Set cards</p>
-							<h1 className="display-title mt-1 truncate text-3xl font-bold tracking-tight">
-								{result.setInfo?.name ?? (set || "Cards")}
-							</h1>
-							<p className="mt-1 font-mono text-sm uppercase text-muted-foreground">
-								{result.setInfo?.code ?? set}
-							</p>
-						</div>
-					</div>
-					<div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:text-right">
-						<span className="text-muted-foreground">
-							Cards{" "}
-							<strong className="ml-1 text-foreground">
-								{result.total_cards}
-							</strong>
-						</span>
-						<span className="text-muted-foreground">
-							Released{" "}
-							<strong className="ml-1 text-foreground">
-								{formatReleaseDate(result.setInfo?.releasedAt ?? null)}
-							</strong>
-						</span>
-						<span className="text-muted-foreground">
-							Type{" "}
-							<strong className="ml-1 text-foreground">
-								{result.setInfo?.setType ?? "Unknown"}
-							</strong>
-						</span>
-					</div>
-				</div>
-			</header>
-			<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
-				<div
-					className="flex rounded-md border bg-card p-1"
-					role="toolbar"
-					aria-label="Card view"
-				>
-					<button
-						aria-label="Grid view"
-						className={`rounded p-2 ${view === "grid" ? "bg-muted" : "text-muted-foreground"}`}
-						onClick={() => setView("grid")}
-						type="button"
-					>
-						<Grid2X2 className="size-4" />
-					</button>
-					<button
-						aria-label="List view"
-						className={`rounded p-2 ${view === "list" ? "bg-muted" : "text-muted-foreground"}`}
-						onClick={() => setView("list")}
-						type="button"
-					>
-						<List className="size-4" />
-					</button>
-				</div>
-				{view === "grid" && (
-					<label className="flex items-center gap-2 text-sm text-muted-foreground">
-						<span>Cards per row</span>
-						<select
-							aria-label="Cards per row"
-							className="h-9 rounded-md border bg-background px-2 text-foreground"
-							onChange={(event) => setColumns(event.target.value)}
-							value={columns}
-						>
-							<option value="3">3</option>
-							<option value="4">4</option>
-							<option value="5">5</option>
-							<option value="6">6</option>
-							<option value="7">7</option>
-						</select>
-					</label>
-				)}
-			</div>
+			<SetCardHeader
+				set={set}
+				result={result}
+				ownedCount={ownedCount}
+				completion={completion}
+			/>
+			<SetCardControls
+				view={view}
+				editMode={editMode}
+				columns={columns}
+				onEditModeChange={() => setEditMode((current) => !current)}
+				onViewChange={setView}
+				onColumnsChange={setColumns}
+			/>
 			{addError && (
 				<p className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
 					{addError}
@@ -153,80 +120,32 @@ export function SetCardView({
 				}
 			>
 				{result.data.map((card, index) => {
-					const image =
-						(card.image_uris as Record<string, string> | undefined)?.normal ??
-						(
-							card.card_faces as
-								| Array<{ image_uris?: Record<string, string> }>
-								| undefined
-						)?.[0]?.image_uris?.normal;
 					const cardId = String(card.id ?? index);
 					const scryfallId = String(card.id ?? "");
-					const added = addedCards.has(cardId);
-					const adding = addingCards.has(cardId);
 					return (
-						<article
+						<SetCardItem
 							key={cardId}
-							className={
-								view === "grid"
-									? "relative overflow-hidden rounded-xl border bg-card"
-									: "relative flex items-center gap-3 rounded-lg border bg-card p-3"
-							}
-						>
-							{image && (
-								<img
-									alt={String(card.name ?? "Card")}
-									className={
-										view === "grid"
-											? "aspect-[488/680] w-full object-cover"
-											: "size-16 rounded object-cover"
-									}
-									loading="lazy"
-									src={image}
-								/>
+							card={card}
+							view={view}
+							editMode={editMode}
+							added={ownedCards.some((item) => item.scryfallId === cardId)}
+							hasFoil={ownedCards.some(
+								(item) => item.scryfallId === cardId && item.finish === "foil",
 							)}
-							{!added && (
-								<div
-									aria-hidden="true"
-									className="pointer-events-none absolute inset-0 bg-muted/55 grayscale"
-								/>
-							)}
-							<button
-								aria-label={added ? "In collection" : "Add to collection"}
-								className="absolute right-2 top-2 rounded-full border bg-background/90 p-1.5 shadow-sm"
-								disabled={added || adding}
-								onClick={(event) => {
-									event.preventDefault();
-									event.stopPropagation();
-									if (scryfallId) void addCard(scryfallId);
-								}}
-								type="button"
-							>
-								{added ? (
-									<Check className="size-4 text-green-600" />
-								) : (
-									<Plus className={`size-4 ${adding ? "animate-spin" : ""}`} />
-								)}
-							</button>
-							{added && (
-								<span className="absolute bottom-2 left-2 rounded bg-background/90 px-1.5 py-0.5 text-xs font-medium text-green-700">
-									In collection
-								</span>
-							)}
-							{view === "list" && (
-								<div className="min-w-0">
-									<p className="truncate font-semibold">
-										{String(card.name ?? "Unknown card")}
-									</p>
-									<p className="text-sm text-muted-foreground">
-										{String(card.mana_cost ?? "")}
-									</p>
-								</div>
-							)}
-						</article>
+							addingNormal={addingCards.has(`${cardId}:nonfoil`)}
+							addingFoil={addingCards.has(`${cardId}:foil`)}
+							onOpen={() => openCardDetails(scryfallId)}
+							onAdd={(finish) => void addCard(scryfallId, finish)}
+						/>
 					);
 				})}
 			</div>
+			{selectedCardId && (
+				<CardDetailsModal
+					cardId={selectedCardId}
+					onClose={() => void closeCardDetails()}
+				/>
+			)}
 		</div>
 	);
 }

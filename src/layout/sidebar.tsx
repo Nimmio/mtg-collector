@@ -1,5 +1,4 @@
-import { Link } from "@tanstack/react-router";
-import { useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 
 import { UserMenu } from "./user-menu";
 
@@ -15,7 +14,8 @@ const links = [
 
 export function Sidebar() {
 	const location = useLocation();
-	const viewingSetCards = location.pathname === "/cards" && Boolean(location.search.set);
+	const viewingSetCards =
+		location.pathname === "/cards" && Boolean(location.search.set);
 
 	return (
 		<aside className="flex flex-col border-b bg-background p-4 md:h-svh md:w-64 md:shrink-0 md:overflow-y-auto md:border-r md:border-b-0">

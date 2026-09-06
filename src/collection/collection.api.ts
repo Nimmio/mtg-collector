@@ -22,6 +22,49 @@ export const getCollectionItemById = createServerFn({ method: "GET" })
 		);
 	});
 
+export const getCollectionItemsForPrinting = createServerFn({ method: "GET" })
+	.validator(z.object({ printingId: z.string() }))
+	.handler(async ({ data }) => {
+		const { requireUserId } = await import("../server/auth.server.js");
+		const { prisma } = await import("../db.js");
+		const userId = await requireUserId();
+		const printing = await prisma.printing.findFirst({
+			where: { id: data.printingId },
+			select: { id: true, scryfallId: true },
+		});
+		return prisma.collectionItem.findMany({
+			where: {
+				userId,
+				printing: printing
+					? { OR: [{ id: printing.id }, { scryfallId: printing.scryfallId }] }
+					: { scryfallId: data.printingId },
+			},
+			select: { id: true, finish: true, quantity: true },
+		});
+	});
+
+export const editCollectionItem = createServerFn({ method: "POST" })
+	.validator(
+		z.object({
+			id: z.string(),
+			quantity: z.number().int().nonnegative().optional(),
+			locationId: z.string().nullable().optional(),
+			notes: z.string().max(5000).optional(),
+			isForTrade: z.boolean().optional(),
+			isForSale: z.boolean().optional(),
+		}),
+	)
+	.handler(async ({ data }) => {
+		const { requireUserId } = await import("../server/auth.server.js");
+		const { deleteCollectionItem, updateCollectionItem } = await import(
+			"./prisma/collection.prisma.js"
+		);
+		const userId = await requireUserId();
+		return data.quantity === 0
+			? deleteCollectionItem(userId, data.id)
+			: updateCollectionItem(userId, data.id, data);
+	});
+
 export const getSetSummaries = createServerFn({ method: "GET" }).handler(
 	async () => {
 		const { requireUserId } = await import("../server/auth.server.js");
@@ -61,20 +104,36 @@ export const getSetSummaries = createServerFn({ method: "GET" }).handler(
 	},
 );
 
-export const getOwnedScryfallIds = createServerFn({ method: "GET" }).handler(
-	async () => {
+export const getOwnedScryfallIds = createServerFn({ method: "GET" })
+	.validator(z.object({ setCode: z.string().optional() }))
+	.handler(async ({ data }) => {
 		const { requireUserId } = await import("../server/auth.server.js");
 		const { prisma } = await import("../db.js");
 		const items = await prisma.collectionItem.findMany({
-			where: { userId: await requireUserId() },
-			select: { printing: { select: { scryfallId: true } } },
+			where: {
+				userId: await requireUserId(),
+				printing: data.setCode ? { setCode: data.setCode } : undefined,
+			},
+			select: {
+				finish: true,
+				quantity: true,
+				printing: { select: { scryfallId: true } },
+			},
 		});
-		return items.map((item) => item.printing.scryfallId);
-	},
-);
+		return items.map((item) => ({
+			scryfallId: item.printing.scryfallId,
+			finish: item.finish,
+			quantity: item.quantity,
+		}));
+	});
 
 export const addCollectionItemByScryfallId = createServerFn({ method: "POST" })
-	.validator(z.object({ scryfallId: z.string() }))
+	.validator(
+		z.object({
+			scryfallId: z.string(),
+			finish: z.enum(["nonfoil", "foil"]).default("nonfoil"),
+		}),
+	)
 	.handler(async ({ data }) => {
 		const { requireUserId } = await import("../server/auth.server.js");
 		const { serializePrisma } = await import("../server/serialize.server.js");
@@ -138,7 +197,7 @@ export const addCollectionItemByScryfallId = createServerFn({ method: "POST" })
 			await createCollectionItem(await requireUserId(), {
 				printingId: printing.id,
 				quantity: 1,
-				finish: "nonfoil",
+				finish: data.finish,
 				condition: "near_mint",
 			}),
 		);

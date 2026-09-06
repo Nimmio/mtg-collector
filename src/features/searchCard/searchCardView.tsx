@@ -5,7 +5,6 @@ import { type FormEvent, useEffect, useState } from "react";
 import { cardSearchQueryOptions } from "#/card/queries/card.queries";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
-import { Route } from "#/routes/_authenticated/searchCards";
 import {
 	Select,
 	SelectContent,
@@ -13,6 +12,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
+import { Route } from "#/routes/_authenticated/searchCards";
 
 const sortOptions = [
 	{ value: "name", label: "Name" },
@@ -53,10 +53,9 @@ export default function SearchCardView() {
 	const query = searchParams.query;
 	const page = searchParams.page;
 	const [input, setInput] = useState(query);
-	const [sort, setSort] =
-		useState<(typeof sortOptions)[number]["value"]>(
-			searchParams.sort as (typeof sortOptions)[number]["value"],
-		);
+	const [sort, setSort] = useState<(typeof sortOptions)[number]["value"]>(
+		searchParams.sort as (typeof sortOptions)[number]["value"],
+	);
 	const [direction, setDirection] = useState<"auto" | "asc" | "desc">(
 		searchParams.direction as "auto" | "asc" | "desc",
 	);
@@ -79,7 +78,10 @@ export default function SearchCardView() {
 		event.preventDefault();
 		const nextQuery = input.trim();
 		if (!nextQuery) return;
-		navigate({ to: ".", search: { query: nextQuery, page: 1, sort, direction } });
+		navigate({
+			to: ".",
+			search: { query: nextQuery, page: 1, sort, direction },
+		});
 	}
 
 	function changeSort(value: string) {
@@ -166,16 +168,13 @@ export default function SearchCardView() {
 					</Button>
 				</form>
 				{search.isFetching && (
-					<p
-						className="mt-3 flex items-center gap-2 text-sm text-muted-foreground"
-						role="status"
-					>
+					<output className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
 						<span
 							className="size-3 animate-spin rounded-full border-2 border-primary border-t-transparent"
 							aria-hidden="true"
 						/>
 						Loading cards...
-					</p>
+					</output>
 				)}
 			</div>
 
@@ -273,7 +272,12 @@ export default function SearchCardView() {
 								type="button"
 								variant="outline"
 								disabled={page === 1 || search.isFetching}
-								onClick={() => navigate({ to: ".", search: { query, page: page - 1, sort, direction } })}
+								onClick={() =>
+									navigate({
+										to: ".",
+										search: { query, page: page - 1, sort, direction },
+									})
+								}
 							>
 								Previous
 							</Button>
@@ -281,7 +285,12 @@ export default function SearchCardView() {
 								type="button"
 								variant="outline"
 								disabled={!result.has_more || search.isFetching}
-								onClick={() => navigate({ to: ".", search: { query, page: page + 1, sort, direction } })}
+								onClick={() =>
+									navigate({
+										to: ".",
+										search: { query, page: page + 1, sort, direction },
+									})
+								}
 							>
 								Next
 							</Button>
@@ -296,8 +305,8 @@ export default function SearchCardView() {
 											sort,
 											direction,
 										},
-								})
-							}
+									})
+								}
 							>
 								<SelectTrigger className="w-32" aria-label="Select page">
 									<SelectValue />

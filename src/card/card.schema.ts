@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+/** Validates the filters accepted by the Scryfall card search endpoint. */
 export const cardSearchInput = z.object({
 	query: z.string().trim().min(1).max(100),
 	unique: z.enum(["cards", "art", "prints"]).default("cards"),
@@ -10,6 +11,7 @@ export const cardSearchInput = z.object({
 	direction: z.enum(["auto", "asc", "desc"]).default("auto"),
 });
 
+/** Validates the subset of Scryfall card data used by the application. */
 export const scryfallCardSchema = z.object({
 	id: z.string(),
 	oracle_id: z.string().optional(),

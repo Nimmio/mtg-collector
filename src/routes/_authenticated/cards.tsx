@@ -13,14 +13,14 @@ export const Route = createFileRoute("/_authenticated/cards")({
 	loaderDeps: ({ search }) => ({ set: search.set }),
 	loader: async ({ deps }) => {
 		if (!deps.set) return null;
-		const [sets, ownedScryfallIds] = await Promise.all([
+		const [sets, ownedCards] = await Promise.all([
 			getSetSummaries(),
-			getOwnedScryfallIds(),
+			getOwnedScryfallIds({ data: { setCode: deps.set } }),
 		]);
 		const setInfo = sets.find((item) => item.code === deps.set);
 		const cards = [];
 		let page = 1;
-		let result;
+		let result: Awaited<ReturnType<typeof searchCards>>;
 		do {
 			result = await searchCards({
 				data: { query: `set:${deps.set}`, unique: "cards", page },
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/cards")({
 			cards.push(...result.data);
 			page += 1;
 		} while (result.has_more);
-		return { ...result, data: cards, setInfo, ownedScryfallIds };
+		return { ...result, data: cards, setInfo, ownedCards };
 	},
 	component: CardsPage,
 });

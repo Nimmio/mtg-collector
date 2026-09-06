@@ -194,3 +194,52 @@ tanstackIntent:
     run: "npx @tanstack/intent@latest load dotenv#dotenvx"
     for: "Use dotenvx to run commands with environment variables, manage multiple .env files, expand variables, and encrypt env files for safe commits and CI/CD."
 <!-- intent-skills:end -->
+
+# OpenCode Execution Rules & Coding Standards
+
+## 1. Core Workflow & Planning
+- **Plan before building:** For non-trivial modifications or architectural refactoring, outline a clear step-by-step plan before making file edits.
+- **Component Breakdown First:** Decompose broad features into focused, single-responsibility components before writing code.
+- **Mandatory Test Coverage:** Write or update tests alongside every component or refactor. Do not consider a task complete without passing tests.
+- **TanStack Intent Skills:** Before implementing or modifying features involving TanStack libraries or `dotenv`, check the Intent Skill map in the workspace and execute the corresponding `npx @tanstack/intent@latest load ...` command if guidance is required.
+
+## 2. Component Architecture & Modularization
+- **Single Responsibility Principle:** Keep components small, modular, and focused on a single UI concern or state boundary.
+- **Component Extraction Thresholds:**
+  - Extract child components if a JSX tree exceeds **~100 lines** or contains repetitive structural elements (e.g., list items, form field rows, card items).
+  - Extract custom hooks (`use*.ts`) when component-level state, TanStack Query hooks, or event handler logic exceeds **~30 lines**.
+- **File & Folder Placement:**
+  - Feature-specific sub-components go in `src/components/<feature>/` or next to the route view module.
+  - Reusable UI primitives go in `src/components/ui/`.
+  - Export components using explicit named exports: `export function CardItem() {}`.
+
+## 3. Testing Standards & Rules
+- **Colocate Unit & Integration Tests:** Place test files directly next to the module or component being tested (`component-name.test.tsx` or `module-name.test.ts`).
+- **Test Expectations for Components:**
+  - **Unit Tests:** Test components in isolation with Vitest and `@testing-library/react`.
+  - **User Interactions:** Mock user interactions using `@testing-library/user-event`.
+  - **Conditional Rendering:** Explicitly test loading states, error boundaries, empty states, and happy-path data states.
+  - **Accessibility & Selectors:** Use accessibility queries (`getByRole`, `getByLabelText`) over implementation-dependent queries (`getByTestId` or class names).
+- **Test Expectations for Utilities & Hooks:**
+  - Unit test pure utility functions, helper methods, Zod schemas, and state logic.
+  - Test custom hooks using `renderHook` from `@testing-library/react`.
+
+## 4. Tech Stack & Architecture
+- **Framework & Routing:** TanStack Start, TanStack Router, React 19, TypeScript.
+- **State & Data Fetching:** TanStack Query, TanStack Form, Zod validation.
+- **Styling:** Tailwind CSS v4, Radix UI, Class Variance Authority (`cva`), `clsx`, `tailwind-merge`.
+- **Database & Queues:** Prisma ORM, PostgreSQL, BullMQ, Redis.
+- **Imports:** Always use `#/*` path aliases (e.g., `# /components/ui/button`). Do not use relative paths (`../../`) or `@/*`.
+
+## 5. Shell & Verification Rules
+- **Package Manager:** Strictly use `pnpm`.
+- **Validation Suite:**
+  - Formatter & Linter: Run `pnpm check` to catch Biome issues.
+  - Test Runner: Run `pnpm test` (or `pnpm vitest run src/path/to/test.test.tsx`) to verify new/updated test suites.
+- **Non-Interactive Execution:** Always run commands non-interactively.
+
+## 6. Definition of Done
+Before completing any task, ensure:
+1. Every new or refactored component is cleanly separated in its own file.
+2. Corresponding `.test.tsx` or `.test.ts` files exist and pass via `pnpm test`.
+3. `pnpm check` passes with zero warnings or errors.

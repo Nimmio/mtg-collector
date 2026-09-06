@@ -1,3 +1,4 @@
+/** Collection and catalog metadata displayed for a Magic set. */
 export type SetSummary = {
 	code: string;
 	name: string;
@@ -14,4 +15,5 @@ export type SetSummary = {
 	groupName: string | null;
 };
 
+/** Supported sort orders for the set collection view. */
 export type SortMode = "release" | "name" | "cards" | "completion";
