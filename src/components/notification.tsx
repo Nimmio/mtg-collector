@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 
-type Notification = { id: number; message: string };
+import { useNotificationState } from "#/components/useNotification";
+
 type NotificationContextValue = { showNotification: (message: string) => void };
 
 const NotificationContext = createContext<NotificationContextValue | null>(
@@ -13,19 +14,12 @@ export function NotificationProvider({
 }: {
 	children: React.ReactNode;
 }) {
-	const [notification, setNotification] = useState<Notification | null>(null);
-
-	useEffect(() => {
-		if (!notification) return;
-		const timeout = window.setTimeout(() => setNotification(null), 3000);
-		return () => window.clearTimeout(timeout);
-	}, [notification]);
+	const { notification, showNotification } = useNotificationState();
 
 	return (
 		<NotificationContext.Provider
 			value={{
-				showNotification: (message) =>
-					setNotification({ id: Date.now(), message }),
+				showNotification,
 			}}
 		>
 			{children}
