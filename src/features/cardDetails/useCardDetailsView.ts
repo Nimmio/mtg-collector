@@ -18,6 +18,7 @@ import type {
 	Finish,
 	Printing,
 } from "#/features/cardDetails/CardDetailsView.types";
+import { cardHasPrices } from "#/features/cardDetails/cardPrice";
 
 export type CardDetailsViewController = {
 	card: ReturnType<typeof useQuery<Card>>;
@@ -56,11 +57,15 @@ export function useCardDetailsView({
 		...cardQueryOptions(id),
 		select: (result) => result as Card,
 	});
+	const priceRefresh = useQuery({
+		...cardQueryOptions(id),
+		enabled: Boolean(card.data && !cardHasPrices(card.data.prices)),
+	});
 	const printings = useQuery({
 		...cardPrintingsQueryOptions(card.data?.oracle_id ?? ""),
 		select: (result) => result.data as Printing[],
 	});
-	const displayedCard = selectedPrinting ?? card.data;
+	const displayedCard = selectedPrinting ?? priceRefresh.data ?? card.data;
 	const printingOptions =
 		printings.data?.filter((printing) => printing.id !== card.data?.id) ?? [];
 

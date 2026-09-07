@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { cardSearchInput } from "../card.schema.js";
+import { uniqueCardResults } from "../card-results.js";
 
 type SearchResponse = {
 	object: "list";
@@ -38,6 +39,7 @@ export const searchCards = createServerFn({ method: "GET" })
 		const result = JSON.parse(
 			JSON.stringify(await response.json()),
 		) as SearchResponse;
+		if (data.unique === "cards") result.data = uniqueCardResults(result.data);
 		await redisSet(key, result, 60 * 60);
 		return result;
 	});

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-
+import { uniqueCardResults } from "#/card/card-results";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import {
@@ -158,7 +158,7 @@ function SearchCardViewContent({
 						</div>
 					) : (
 						<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-							{result.data.map((card, index) => {
+							{uniqueCardResults(result.data).map((card, index) => {
 								const image = cardImage(card);
 								return (
 									<article

@@ -1,7 +1,9 @@
 import { Button } from "#/components/ui/button";
 import type { CardDetailsViewProps } from "#/features/cardDetails/CardDetailsView.types";
+import { formatCardPrices } from "#/features/cardDetails/cardPrice";
 import { useCardDetailsView } from "#/features/cardDetails/useCardDetailsView";
 import { m } from "#/paraglide/messages";
+import { readSettings } from "#/settings/settings";
 
 function imageFor(
 	card: NonNullable<ReturnType<typeof useCardDetailsView>["displayedCard"]>,
@@ -24,6 +26,7 @@ export default function CardDetailsView({
 	modal = false,
 }: CardDetailsViewProps) {
 	const controller = useCardDetailsView({ id, onSynchronize, onBack });
+	const currency = readSettings().currency;
 	const {
 		card,
 		printings,
@@ -67,9 +70,12 @@ export default function CardDetailsView({
 	}
 
 	if (!displayedCard) return null;
-	const faces = displayedCard.card_faces?.length
-		? displayedCard.card_faces
-		: [undefined];
+	const faces =
+		displayedCard.layout === "prepare"
+			? [undefined]
+			: displayedCard.card_faces?.length
+				? displayedCard.card_faces
+				: [undefined];
 
 	return (
 		<section className={modal ? "space-y-5" : "mx-auto max-w-5xl space-y-6"}>
@@ -170,19 +176,18 @@ export default function CardDetailsView({
 							{displayedCard.name}
 						</h1>
 						{modal && (
-							<div className="mt-3 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-								<span className="rounded-full bg-muted px-3 py-1">
-									{displayedCard.set_name}
-								</span>
-								<span className="rounded-full bg-muted px-3 py-1">
-									#{displayedCard.collector_number}
-								</span>
-								<span className="rounded-full bg-muted px-3 py-1">
-									{displayedCard.rarity}
-								</span>
-								<span className="rounded-full bg-muted px-3 py-1">
-									{displayedCard.type_line}
-								</span>
+							<div>
+								<div className="flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+									<span className="rounded-full bg-muted px-3 py-1">
+										{displayedCard.set_name}
+									</span>
+									<span className="rounded-full bg-muted px-3 py-1">
+										#{displayedCard.collector_number}
+									</span>
+									<span className="rounded-full bg-muted px-3 py-1">
+										{displayedCard.rarity}
+									</span>
+								</div>
 							</div>
 						)}
 					</header>
@@ -213,6 +218,17 @@ export default function CardDetailsView({
 					<div
 						className={`grid gap-3 rounded-xl border bg-card p-4 text-sm sm:grid-cols-2 ${modal ? "order-first bg-muted/30" : ""}`}
 					>
+						{modal && formatCardPrices(displayedCard.prices, currency) && (
+							<p>
+								<strong>Price:</strong>{" "}
+								{formatCardPrices(displayedCard.prices, currency)}
+							</p>
+						)}
+						{modal && (
+							<p>
+								<strong>Type:</strong> {displayedCard.type_line}
+							</p>
+						)}
 						<p>
 							<strong>{m.set()}:</strong> {displayedCard.set?.toUpperCase()}
 						</p>

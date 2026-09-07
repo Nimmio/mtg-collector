@@ -15,6 +15,13 @@ export type Card = {
 	image_uris?: Record<string, string>;
 	prints_search_uri?: string;
 	oracle_id?: string;
+	layout?: string;
+	prices?: {
+		usd?: string | null;
+		usd_foil?: string | null;
+		eur?: string | null;
+		eur_foil?: string | null;
+	};
 	card_faces?: Array<{
 		name?: string;
 		image_uris?: Record<string, string>;

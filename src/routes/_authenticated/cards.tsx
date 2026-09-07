@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { uniqueCardResults } from "#/card/card-results";
 import { searchCards } from "#/card/server/card.api";
 import {
 	getOwnedScryfallIds,
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/cards")({
 			cards.push(...result.data);
 			page += 1;
 		} while (result.has_more);
-		return { ...result, data: cards, setInfo, ownedCards };
+		return { ...result, data: uniqueCardResults(cards), setInfo, ownedCards };
 	},
 	component: CardsPage,
 });

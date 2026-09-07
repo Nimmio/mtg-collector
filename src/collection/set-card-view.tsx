@@ -1,3 +1,4 @@
+import { uniqueCardResults } from "#/card/card-results";
 import { CardDetailsModal } from "./card-details-modal";
 import type { CardResult } from "./SetCardView.types";
 import { SetCardControls } from "./set-card-controls";
@@ -61,7 +62,7 @@ export function SetCardView({
 						: "grid gap-2"
 				}
 			>
-				{result.data.map((card, index) => {
+				{uniqueCardResults(result.data).map((card, index) => {
 					const cardId = String(card.id ?? index);
 					const scryfallId = String(card.id ?? "");
 					return (
