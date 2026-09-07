@@ -49,6 +49,6 @@ describe("SetOverview", () => {
 		await user.type(screen.getByRole("textbox", { name: "Find sets" }), "beta");
 		expect(screen.getByText("Beta")).toBeInTheDocument();
 		expect(screen.queryByText("Alpha")).not.toBeInTheDocument();
-		expect(screen.getByText("1 of 2 sets")).toBeInTheDocument();
+		expect(screen.getByText("1 sets")).toBeInTheDocument();
 	});
 });

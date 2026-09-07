@@ -204,10 +204,23 @@ tanstackIntent:
 - **TanStack Intent Skills:** Before implementing or modifying features involving TanStack libraries or `dotenv`, check the Intent Skill map in the workspace and execute the corresponding `npx @tanstack/intent@latest load ...` command if guidance is required.
 
 ## 2. Component Architecture & Modularization
+- **Strict Separation of Concerns (Logic vs. Rendering):**
+  - **Never mix complex state, data fetching, or event logic in the same file as JSX UI components.**
+  - **View Component (`Component.tsx`):** Purely presentational. Accepts typed props (including state and callbacks provided by the controller hook) and renders JSX using modern React 19 standards (e.g., explicit props, no `FC`/`FunctionComponent` wrappers).
+  - **Controller Hook (`useComponent.ts` or `useComponentState.ts`):** Contains all component-level logic, state management (Zustand, React state), TanStack Query hooks, TanStack Form handlers, and side effects. Returns a single typed object containing state values and event handlers.
+  - **Type Definitions (`Component.types.ts` or inline in hook):** Explicitly export prop types for both the View component and the Controller hook return values.
 - **Single Responsibility Principle:** Keep components small, modular, and focused on a single UI concern or state boundary.
-- **Component Extraction Thresholds:**
+- **Component Extraction & File Structure Thresholds:**
+  - Standard component folder layout for non-trivial features:
+    ```text
+    src/components/feature-name/
+    ├── FeatureView.tsx       # UI rendering & JSX only
+    ├── useFeatureView.ts     # Controller hook (logic, TanStack Query/Form, state)
+    ├── FeatureView.types.ts # Shared TypeScript interfaces/types
+    └── FeatureView.test.tsx # Unit tests for view and hook
+    ```
   - Extract child components if a JSX tree exceeds **~100 lines** or contains repetitive structural elements (e.g., list items, form field rows, card items).
-  - Extract custom hooks (`use*.ts`) when component-level state, TanStack Query hooks, or event handler logic exceeds **~30 lines**.
+  - Extract custom hooks (`use*.ts`) whenever component logic, state, or data fetching exceeds **~30 lines**.
 - **File & Folder Placement:**
   - Feature-specific sub-components go in `src/components/<feature>/` or next to the route view module.
   - Reusable UI primitives go in `src/components/ui/`.

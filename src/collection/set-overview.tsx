@@ -1,26 +1,21 @@
-import { useDeferredValue, useState } from "react";
+import type { SetOverviewProps } from "./SetOverview.types";
 import { SetControls } from "./set-controls";
 import { SetTable } from "./set-table";
-import type { SetSummary, SortMode } from "./set-types";
-import { readSettings } from "#/settings/settings";
+import { useSetOverview } from "./useSetOverview";
 
 /** Provides filtering and sorting controls for the set collection. */
-export function SetOverview({ sets }: { sets: SetSummary[] }) {
-	const [search, setSearch] = useState("");
-	const [type, setType] = useState("all");
-	const [sort, setSort] = useState<SortMode>("release");
-	const [cardsPerRow] = useState(() => readSettings().cardsPerRow);
-	const deferredSearch = useDeferredValue(search);
-	const query = deferredSearch.trim().toLowerCase();
-	const filteredSets = sets
-		.filter((set) => type === "all" || set.setType === type)
-		.filter(
-			(set) =>
-				!query ||
-				set.name.toLowerCase().includes(query) ||
-				set.code.toLowerCase().includes(query) ||
-				set.groupName?.toLowerCase().includes(query),
-		);
+export function SetOverview({ sets }: SetOverviewProps) {
+	const controller = useSetOverview(sets);
+	const {
+		search,
+		type,
+		sort,
+		cardsPerRow,
+		filteredSets,
+		onSearchChange,
+		onTypeChange,
+		onSortChange,
+	} = controller;
 
 	return (
 		<div className="space-y-5">
@@ -29,9 +24,9 @@ export function SetOverview({ sets }: { sets: SetSummary[] }) {
 				sets={sets}
 				sort={sort}
 				type={type}
-				onSearchChange={setSearch}
-				onSortChange={setSort}
-				onTypeChange={setType}
+				onSearchChange={onSearchChange}
+				onSortChange={onSortChange}
+				onTypeChange={onTypeChange}
 			/>
 			<p className="text-sm text-muted-foreground">
 				{filteredSets.length} sets

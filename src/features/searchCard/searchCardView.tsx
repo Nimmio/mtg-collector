@@ -1,8 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { type FormEvent, useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 
-import { cardSearchQueryOptions } from "#/card/queries/card.queries";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import {
@@ -12,90 +9,43 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "#/components/ui/select";
-import { Route } from "#/routes/_authenticated/searchCards";
-
-const sortOptions = [
-	{ value: "name", label: "Name" },
-	{ value: "released", label: "Release date" },
-	{ value: "set", label: "Set" },
-	{ value: "rarity", label: "Rarity" },
-	{ value: "usd", label: "USD price" },
-	{ value: "tix", label: "MTGO price" },
-	{ value: "edhrec", label: "EDHREC rank" },
-] as const;
-
-type SearchCard = {
-	id?: string;
-	name?: string;
-	set_name?: string;
-	collector_number?: string;
-	rarity?: string;
-	released_at?: string;
-	image_uris?: Record<string, string>;
-	card_faces?: Array<{ image_uris?: Record<string, string> }>;
-};
-
-type SearchResult = {
-	total_cards: number;
-	has_more: boolean;
-	data: SearchCard[];
-};
-
-const cardsPerPage = 175;
+import type {
+	SearchCard,
+	SearchCardViewController,
+} from "#/features/searchCard/SearchCardView.types";
+import { sortOptions } from "#/features/searchCard/SearchCardView.types";
+import { useSearchCardView } from "#/features/searchCard/useSearchCardView";
 
 function cardImage(card: SearchCard) {
 	return card.image_uris?.normal ?? card.card_faces?.[0]?.image_uris?.normal;
 }
 
 export default function SearchCardView() {
-	const navigate = useNavigate();
-	const searchParams = Route.useSearch();
-	const query = searchParams.query;
-	const page = searchParams.page;
-	const [input, setInput] = useState(query);
-	const [sort, setSort] = useState<(typeof sortOptions)[number]["value"]>(
-		searchParams.sort as (typeof sortOptions)[number]["value"],
-	);
-	const [direction, setDirection] = useState<"auto" | "asc" | "desc">(
-		searchParams.direction as "auto" | "asc" | "desc",
-	);
+	return <SearchCardViewContent controller={useSearchCardView()} />;
+}
 
-	useEffect(() => {
-		setInput(query);
-	}, [query]);
-	const search = useQuery({
-		...cardSearchQueryOptions({
-			query,
-			unique: "cards",
-			page,
-			sort,
-			direction,
-		}),
-		select: (result) => result as SearchResult,
-	});
-
-	function submit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-		const nextQuery = input.trim();
-		if (!nextQuery) return;
-		navigate({
-			to: ".",
-			search: { query: nextQuery, page: 1, sort, direction },
-		});
-	}
-
-	function changeSort(value: string) {
-		setSort(value as (typeof sortOptions)[number]["value"]);
-		navigate({ to: ".", search: { query, page: 1, sort: value, direction } });
-	}
-
-	function changeDirection(value: string) {
-		setDirection(value as "auto" | "asc" | "desc");
-		navigate({ to: ".", search: { query, page: 1, sort, direction: value } });
-	}
-
-	const result = search.data;
-	const totalPages = result ? Math.ceil(result.total_cards / cardsPerPage) : 0;
+function SearchCardViewContent({
+	controller,
+}: {
+	controller: SearchCardViewController;
+}) {
+	const {
+		query,
+		page,
+		input,
+		sort,
+		direction,
+		result,
+		isFetching,
+		isError,
+		error,
+		totalPages,
+		onInputChange,
+		onSubmit,
+		onSortChange,
+		onDirectionChange,
+		onPageChange,
+	} = controller;
 
 	return (
 		<section className="mx-auto max-w-7xl space-y-8">
@@ -114,7 +64,7 @@ export default function SearchCardView() {
 			<div className="rounded-2xl border bg-card p-4 shadow-sm sm:p-5">
 				<form
 					className="flex flex-col gap-3 lg:flex-row lg:items-end"
-					onSubmit={submit}
+					onSubmit={onSubmit}
 				>
 					<div className="min-w-0 flex-1 space-y-2">
 						<label className="sr-only" htmlFor="card-search">
@@ -123,7 +73,7 @@ export default function SearchCardView() {
 						<Input
 							id="card-search"
 							value={input}
-							onChange={(event) => setInput(event.target.value)}
+							onChange={(event) => onInputChange(event.target.value)}
 							placeholder="Search cards, e.g. lightning t:instant"
 							className="h-11 w-full"
 						/>
@@ -132,7 +82,7 @@ export default function SearchCardView() {
 						<label className="text-sm font-medium" htmlFor="card-sort">
 							Sort by
 						</label>
-						<Select value={sort} onValueChange={changeSort}>
+						<Select value={sort} onValueChange={onSortChange}>
 							<SelectTrigger id="card-sort" className="w-full sm:w-48">
 								<SelectValue />
 							</SelectTrigger>
@@ -147,7 +97,7 @@ export default function SearchCardView() {
 						<label className="text-sm font-medium" htmlFor="card-direction">
 							Order
 						</label>
-						<Select value={direction} onValueChange={changeDirection}>
+						<Select value={direction} onValueChange={onDirectionChange}>
 							<SelectTrigger id="card-direction" className="w-full sm:w-36">
 								<SelectValue />
 							</SelectTrigger>
@@ -162,12 +112,12 @@ export default function SearchCardView() {
 						type="submit"
 						size="lg"
 						className="lg:shrink-0"
-						disabled={!input.trim() || search.isFetching}
+						disabled={!input.trim() || isFetching}
 					>
-						{search.isFetching ? "Searching..." : "Search cards"}
+						{isFetching ? "Searching..." : "Search cards"}
 					</Button>
 				</form>
-				{search.isFetching && (
+				{isFetching && (
 					<output className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
 						<span
 							className="size-3 animate-spin rounded-full border-2 border-primary border-t-transparent"
@@ -178,10 +128,10 @@ export default function SearchCardView() {
 				)}
 			</div>
 
-			{search.isError && (
+			{isError && (
 				<div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-					{search.error instanceof Error
-						? search.error.message
+					{error instanceof Error
+						? error.message
 						: "Scryfall could not complete that search."}
 				</div>
 			)}
@@ -271,42 +221,22 @@ export default function SearchCardView() {
 							<Button
 								type="button"
 								variant="outline"
-								disabled={page === 1 || search.isFetching}
-								onClick={() =>
-									navigate({
-										to: ".",
-										search: { query, page: page - 1, sort, direction },
-									})
-								}
+								disabled={page === 1 || isFetching}
+								onClick={() => onPageChange(page - 1)}
 							>
 								Previous
 							</Button>
 							<Button
 								type="button"
 								variant="outline"
-								disabled={!result.has_more || search.isFetching}
-								onClick={() =>
-									navigate({
-										to: ".",
-										search: { query, page: page + 1, sort, direction },
-									})
-								}
+								disabled={!result.has_more || isFetching}
+								onClick={() => onPageChange(page + 1)}
 							>
 								Next
 							</Button>
 							<Select
 								value={String(page)}
-								onValueChange={(value) =>
-									navigate({
-										to: ".",
-										search: {
-											query,
-											page: Number(value),
-											sort,
-											direction,
-										},
-									})
-								}
+								onValueChange={(value) => onPageChange(Number(value))}
 							>
 								<SelectTrigger className="w-32" aria-label="Select page">
 									<SelectValue />
