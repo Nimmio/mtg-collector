@@ -1,13 +1,6 @@
 import { useRef } from "react";
 import { Button } from "#/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "#/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter } from "#/components/ui/dialog";
 import CardDetailsView from "#/features/cardDetails/cardDetailsView";
 import { m } from "#/paraglide/messages";
 
@@ -33,20 +26,17 @@ function CardDetailsModalContent({ cardId, onClose }: CardDetailsModalProps) {
 	};
 
 	return (
-		<DialogContent>
-			<DialogHeader>
-				<DialogTitle>{m.card_details()}</DialogTitle>
-				<DialogDescription>{m.review_card()}</DialogDescription>
-			</DialogHeader>
+		<DialogContent className="max-w-6xl border-primary/20 bg-background/95 p-4 shadow-2xl backdrop-blur-xl sm:p-7">
 			<CardDetailsView
 				id={cardId}
 				showNavigation={false}
 				showVersions={false}
+				modal
 				onSynchronize={(synchronize) => {
 					synchronizeRef.current = synchronize;
 				}}
 			/>
-			<DialogFooter>
+			<DialogFooter className="border-t border-border/70 pt-4">
 				<Button variant="outline" onClick={() => void close()}>
 					{m.close()}
 				</Button>

@@ -33,4 +33,5 @@ export type CardDetailsViewProps = {
 	onBack?: () => void;
 	showNavigation?: boolean;
 	showVersions?: boolean;
+	modal?: boolean;
 };

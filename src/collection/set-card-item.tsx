@@ -1,3 +1,5 @@
+import { Gem, Plus } from "lucide-react";
+import { Button } from "#/components/ui/button";
 import { m } from "#/paraglide/messages";
 
 type Card = Record<string, string | object | undefined>;
@@ -33,13 +35,13 @@ export function SetCardItem({
 		)?.[0]?.image_uris?.normal;
 	return (
 		<article
-			className={`block w-full text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-lg ${view === "grid" ? "relative cursor-pointer overflow-hidden rounded-xl border bg-card" : "relative flex cursor-pointer items-center gap-3 rounded-lg border bg-card p-3"}`}
+			className={`group relative block w-full overflow-hidden text-left transition duration-300 hover:-translate-y-1 hover:shadow-xl ${view === "grid" ? "cursor-pointer rounded-2xl border bg-card shadow-sm" : "flex cursor-pointer items-center gap-4 rounded-xl border bg-card p-3 shadow-sm"}`}
 		>
 			<button
 				aria-label={m.view_card_details({
 					name: String(card.name ?? m.magic_card()),
 				})}
-				className="block w-full text-left"
+				className="block w-full cursor-pointer text-left"
 				onClick={onOpen}
 				type="button"
 			>
@@ -48,8 +50,8 @@ export function SetCardItem({
 						alt={String(card.name ?? m.magic_card())}
 						className={
 							view === "grid"
-								? "aspect-[488/680] w-full object-cover"
-								: "size-16 rounded object-cover"
+								? "aspect-[488/680] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
+								: "size-16 rounded-lg object-cover"
 						}
 						loading="lazy"
 						src={image}
@@ -59,30 +61,36 @@ export function SetCardItem({
 			{!added && (
 				<div
 					aria-hidden="true"
-					className="pointer-events-none absolute inset-0 bg-muted/55 grayscale"
+					className="pointer-events-none absolute inset-0 bg-background/35 grayscale"
 				/>
 			)}
 			{hasFoil && (
 				<div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,0,128,0.48)_5%,rgba(255,128,0,0.4)_25%,rgba(255,245,0,0.42)_42%,rgba(0,255,128,0.42)_58%,rgba(0,180,255,0.48)_75%,rgba(150,0,255,0.45)_95%)] mix-blend-screen opacity-90" />
 			)}
 			{editMode && (
-				<div className="absolute inset-x-2 bottom-2 flex gap-1">
-					<button
-						className="flex-1 rounded border bg-background/95 px-2 py-1.5 text-xs font-medium shadow-sm disabled:opacity-50"
+				<div className="absolute inset-x-2 bottom-2 flex gap-2 rounded-xl border border-white/20 bg-black/55 p-1.5 shadow-lg backdrop-blur-md">
+					<Button
+						aria-label={addingNormal ? m.adding() : m.add_normal()}
+						className="h-9 flex-1 cursor-pointer border-white/15 bg-white/95 text-slate-900 shadow-sm hover:scale-105 hover:bg-white dark:bg-white/95 dark:text-slate-900 dark:hover:bg-white"
+						size="icon-sm"
+						title={addingNormal ? m.adding() : m.add_normal()}
 						disabled={addingNormal}
 						onClick={() => onAdd("nonfoil")}
 						type="button"
 					>
-						{addingNormal ? m.adding() : m.add_normal()}
-					</button>
-					<button
-						className="flex-1 rounded border bg-background/95 px-2 py-1.5 text-xs font-medium shadow-sm disabled:opacity-50"
+						<Plus aria-hidden="true" />
+					</Button>
+					<Button
+						aria-label={addingFoil ? m.adding() : m.add_foil()}
+						className="h-9 flex-1 cursor-pointer border-amber-200/50 bg-gradient-to-r from-fuchsia-500 via-amber-400 to-cyan-400 text-white shadow-sm hover:scale-105 hover:brightness-110 dark:text-white"
+						size="icon-sm"
+						title={addingFoil ? m.adding() : m.add_foil()}
 						disabled={addingFoil}
 						onClick={() => onAdd("foil")}
 						type="button"
 					>
-						{addingFoil ? m.adding() : m.add_foil()}
-					</button>
+						<Gem aria-hidden="true" />
+					</Button>
 				</div>
 			)}
 			{view === "list" && (

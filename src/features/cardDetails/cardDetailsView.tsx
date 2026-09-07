@@ -21,6 +21,7 @@ export default function CardDetailsView({
 	onBack,
 	showNavigation = true,
 	showVersions: showVersionsEnabled = true,
+	modal = false,
 }: CardDetailsViewProps) {
 	const controller = useCardDetailsView({ id, onSynchronize, onBack });
 	const {
@@ -71,7 +72,7 @@ export default function CardDetailsView({
 		: [undefined];
 
 	return (
-		<section className="mx-auto max-w-5xl space-y-6">
+		<section className={modal ? "space-y-5" : "mx-auto max-w-5xl space-y-6"}>
 			{showNavigation && (
 				<button
 					type="button"
@@ -81,7 +82,13 @@ export default function CardDetailsView({
 					{m.back_to_search()}
 				</button>
 			)}
-			<div className="grid gap-8 md:grid-cols-[minmax(16rem,24rem)_1fr]">
+			<div
+				className={
+					modal
+						? "grid items-start gap-6 md:grid-cols-[minmax(14rem,19rem)_1fr]"
+						: "grid gap-8 md:grid-cols-[minmax(16rem,24rem)_1fr]"
+				}
+			>
 				<div className="min-w-0 self-start">
 					<div className="flex flex-wrap gap-4">
 						{faces.map((face) => {
@@ -158,37 +165,54 @@ export default function CardDetailsView({
 							)}
 						</div>
 					)}
-					<header>
-						<h1 className="text-4xl font-semibold tracking-tight">
+					<header className={modal ? "order-first" : undefined}>
+						<h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
 							{displayedCard.name}
 						</h1>
-						<p className="mt-2 text-muted-foreground">
-							{displayedCard.set_name} · {displayedCard.collector_number}
-						</p>
-					</header>
-					<div className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2">
-						{(["nonfoil", "foil"] as const).map((finish) => (
-							<label className="space-y-1 text-sm" key={finish}>
-								<span className="font-medium">
-									{finish === "foil" ? m.foil_cards() : m.normal_cards()}
+						{modal && (
+							<div className="mt-3 flex flex-wrap gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+								<span className="rounded-full bg-muted px-3 py-1">
+									{displayedCard.set_name}
 								</span>
-								<input
-									className="h-9 w-full rounded-md border bg-background px-3"
-									disabled={savingFinish === finish}
-									min="0"
-									type="number"
-									value={draftCounts[finish]}
-									onChange={(event) =>
-										onDraftCountChange(finish, event.target.value)
-									}
-								/>
-							</label>
-						))}
-					</div>
+								<span className="rounded-full bg-muted px-3 py-1">
+									#{displayedCard.collector_number}
+								</span>
+								<span className="rounded-full bg-muted px-3 py-1">
+									{displayedCard.rarity}
+								</span>
+								<span className="rounded-full bg-muted px-3 py-1">
+									{displayedCard.type_line}
+								</span>
+							</div>
+						)}
+					</header>
+					{!modal && (
+						<div className="grid gap-3 rounded-xl border bg-card p-4 sm:grid-cols-2">
+							{(["nonfoil", "foil"] as const).map((finish) => (
+								<label className="space-y-1 text-sm" key={finish}>
+									<span className="font-medium">
+										{finish === "foil" ? m.foil_cards() : m.normal_cards()}
+									</span>
+									<input
+										className="h-9 w-full rounded-md border bg-background px-3"
+										disabled={savingFinish === finish}
+										min="0"
+										type="number"
+										value={draftCounts[finish]}
+										onChange={(event) =>
+											onDraftCountChange(finish, event.target.value)
+										}
+									/>
+								</label>
+							))}
+						</div>
+					)}
 					{countError && (
 						<p className="text-sm text-destructive">{countError}</p>
 					)}
-					<div className="grid gap-3 rounded-xl border bg-card p-4 text-sm sm:grid-cols-2">
+					<div
+						className={`grid gap-3 rounded-xl border bg-card p-4 text-sm sm:grid-cols-2 ${modal ? "order-first bg-muted/30" : ""}`}
+					>
 						<p>
 							<strong>{m.set()}:</strong> {displayedCard.set?.toUpperCase()}
 						</p>
@@ -205,16 +229,21 @@ export default function CardDetailsView({
 						</p>
 					</div>
 					{faces.map((face, index) => (
-						<div key={face?.name ?? `face-${index}`} className="space-y-2">
+						<div
+							key={face?.name ?? `face-${index}`}
+							className={`space-y-2 ${modal ? "rounded-2xl border border-border/70 bg-card p-5 shadow-sm" : ""}`}
+						>
 							{face?.name && (
 								<h2 className="text-xl font-semibold">{face.name}</h2>
 							)}
 							<p className="font-medium">
 								{face?.mana_cost ?? displayedCard.mana_cost ?? ""}
 							</p>
-							<p className="text-muted-foreground">
-								{face?.type_line ?? displayedCard.type_line}
-							</p>
+							{!modal && (
+								<p className="text-muted-foreground">
+									{face?.type_line ?? displayedCard.type_line}
+								</p>
+							)}
 							<p className="whitespace-pre-line">
 								{face?.oracle_text ?? displayedCard.oracle_text}
 							</p>
@@ -225,6 +254,36 @@ export default function CardDetailsView({
 							)}
 						</div>
 					))}
+					{modal && (
+						<div className="rounded-xl border bg-muted/20 px-3 py-2.5">
+							<div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+								<p className="mr-auto text-sm font-semibold">{m.cards()}</p>
+								{(["nonfoil", "foil"] as const).map((finish) => (
+									<label
+										className="flex items-center gap-2 text-sm"
+										key={finish}
+									>
+										<span className="font-medium text-muted-foreground">
+											{finish === "foil" ? m.foil_cards() : m.normal_cards()}
+										</span>
+										<input
+											aria-label={
+												finish === "foil" ? m.foil_cards() : m.normal_cards()
+											}
+											className="h-8 w-14 rounded-lg border bg-background px-2 text-right tabular-nums"
+											disabled={savingFinish === finish}
+											min="0"
+											type="number"
+											value={draftCounts[finish]}
+											onChange={(event) =>
+												onDraftCountChange(finish, event.target.value)
+											}
+										/>
+									</label>
+								))}
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</section>
