@@ -1,3 +1,4 @@
+import { m } from "#/paraglide/messages";
 import type { SetOverviewProps } from "./SetOverview.types";
 import { SetControls } from "./set-controls";
 import { SetTable } from "./set-table";
@@ -29,7 +30,7 @@ export function SetOverview({ sets }: SetOverviewProps) {
 				onTypeChange={onTypeChange}
 			/>
 			<p className="text-sm text-muted-foreground">
-				{filteredSets.length} sets
+				{m.set_count({ count: filteredSets.length })}
 			</p>
 			<SetTable sets={filteredSets} sort={sort} cardsPerRow={cardsPerRow} />
 		</div>

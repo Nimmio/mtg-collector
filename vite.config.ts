@@ -14,11 +14,11 @@ const config = defineConfig({
 		paraglideVitePlugin({
 			project: "./project.inlang",
 			outdir: "./src/paraglide",
-			strategy: ["url", "baseLocale"],
+			strategy: ["cookie", "baseLocale"],
 		}),
+		tanstackStart(),
 		nitro({ rollupConfig: { external: [/^@sentry\//] } }),
 		tailwindcss(),
-		tanstackStart(),
 		viteReact(),
 		babel({ presets: [reactCompilerPreset()] }),
 	],

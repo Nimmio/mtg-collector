@@ -15,6 +15,7 @@ describe("settings", () => {
 			theme: "dark" as const,
 			cardsPerRow: 6,
 			currency: "EUR" as const,
+			language: "de" as const,
 		};
 		Object.defineProperty(window, "localStorage", {
 			configurable: true,

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-
+import { m } from "#/paraglide/messages";
 import { getTransactions } from "#/transaction/transaction.api";
 
 export const Route = createFileRoute("/_authenticated/transactions")({
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/transactions")({
 		console.log("Transactions:", data);
 		return data;
 	},
-	component: () => <Page title="Transactions" />,
+	component: () => <Page title={m.transactions()} />,
 });
 
 function Page({ title }: { title: string }) {

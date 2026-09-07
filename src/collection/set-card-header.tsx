@@ -1,3 +1,4 @@
+import { m } from "#/paraglide/messages";
 import type { SetSummary } from "./set-types";
 import { formatReleaseDate } from "./set-utils";
 
@@ -25,9 +26,9 @@ export function SetCardHeader({
 						/>
 					)}
 					<div className="min-w-0">
-						<p className="island-kicker">Set cards</p>
+						<p className="island-kicker">{m.set_cards()}</p>
 						<h1 className="display-title mt-1 truncate text-3xl font-bold tracking-tight">
-							{result.setInfo?.name ?? (set || "Cards")}
+							{result.setInfo?.name ?? (set || m.cards())}
 						</h1>
 						<p className="mt-1 font-mono text-sm uppercase text-muted-foreground">
 							{result.setInfo?.code ?? set}
@@ -36,30 +37,30 @@ export function SetCardHeader({
 				</div>
 				<div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:text-right">
 					<span className="text-muted-foreground">
-						Cards{" "}
+						{m.cards()}{" "}
 						<strong className="ml-1 text-foreground">
 							{ownedCount}/{result.total_cards}
 						</strong>
 					</span>
 					<span className="text-muted-foreground">
-						Released{" "}
+						{m.released()}{" "}
 						<strong className="ml-1 text-foreground">
 							{formatReleaseDate(result.setInfo?.releasedAt ?? null)}
 						</strong>
 					</span>
 					<span className="text-muted-foreground">
-						Type{" "}
+						{m.set_type()}{" "}
 						<strong className="ml-1 text-foreground">
-							{result.setInfo?.setType ?? "Unknown"}
+							{result.setInfo?.setType ?? m.unknown()}
 						</strong>
 					</span>
 					<span className="text-muted-foreground">
-						Complete{" "}
+						{m.complete()}{" "}
 						<strong className="ml-1 text-foreground">{completion}%</strong>
 					</span>
 					<div className="col-span-2 flex items-center gap-2 sm:col-span-2 sm:justify-end">
 						<div
-							aria-label={`${completion}% complete`}
+							aria-label={m.complete_percent({ percent: completion })}
 							aria-valuemax={100}
 							aria-valuemin={0}
 							aria-valuenow={completion}

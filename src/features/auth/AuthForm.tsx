@@ -2,6 +2,7 @@ import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import type { AuthFormProps } from "#/features/auth/AuthForm.types";
+import { m } from "#/paraglide/messages";
 
 export function AuthForm({
 	name,
@@ -31,7 +32,7 @@ export function AuthForm({
 				<form className="space-y-5" onSubmit={onSubmit}>
 					{onNameChange && (
 						<div className="space-y-2">
-							<Label htmlFor="name">Name</Label>
+							<Label htmlFor="name">{m.name()}</Label>
 							<Input
 								id="name"
 								required
@@ -41,7 +42,7 @@ export function AuthForm({
 						</div>
 					)}
 					<div className="space-y-2">
-						<Label htmlFor="email">Email</Label>
+						<Label htmlFor="email">{m.email()}</Label>
 						<Input
 							id="email"
 							type="email"
@@ -51,7 +52,7 @@ export function AuthForm({
 						/>
 					</div>
 					<div className="space-y-2">
-						<Label htmlFor="password">Password</Label>
+						<Label htmlFor="password">{m.password()}</Label>
 						<Input
 							id="password"
 							type="password"
@@ -63,7 +64,7 @@ export function AuthForm({
 					</div>
 					{error && <p className="text-sm text-destructive">{error}</p>}
 					<Button className="w-full" type="submit" disabled={loading}>
-						{loading ? "Please wait..." : submitLabel}
+						{loading ? m.please_wait() : submitLabel}
 					</Button>
 				</form>
 				<p className="mt-6 text-center text-sm text-muted-foreground">

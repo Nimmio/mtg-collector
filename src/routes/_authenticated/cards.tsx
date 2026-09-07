@@ -5,6 +5,7 @@ import {
 	getSetSummaries,
 } from "#/collection/collection.api";
 import { SetCardView } from "#/collection/set-card-view";
+import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/_authenticated/cards")({
 	validateSearch: (search: Record<string, unknown>) => ({
@@ -40,7 +41,7 @@ function CardsPage() {
 		<SetCardView result={result} set={set} />
 	) : (
 		<div className="page-wrap py-2">
-			<p className="text-muted-foreground">Select a set to view its cards.</p>
+			<p className="text-muted-foreground">{m.select_set()}</p>
 		</div>
 	);
 }

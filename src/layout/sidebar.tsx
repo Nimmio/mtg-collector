@@ -1,18 +1,15 @@
 import { Link, useLocation } from "@tanstack/react-router";
-
-import { UserMenu } from "./user-menu";
+import { UserMenu } from "#/layout/user-menu";
+import { useLocale } from "#/lib/locale";
+import { m } from "#/paraglide/messages";
 
 const links = [
-	["/", "Dashboard"],
-	["/cards", "Cards"],
-	["/printings", "Printings"],
-	["/collection", "Collection"],
-	["/storage", "Storage"],
-	["/transactions", "Transactions"],
-	["/searchCards", "SearchCard"],
+	["/", "dashboard"],
+	["/collection", "collection"],
 ] as const;
 
 export function Sidebar() {
+	const locale = useLocale();
 	const location = useLocation();
 	const viewingSetCards =
 		location.pathname === "/cards" && Boolean(location.search.set);
@@ -25,11 +22,13 @@ export function Sidebar() {
 					<Link
 						key={to}
 						to={to}
-						activeOptions={label === "Cards" ? { exact: true } : undefined}
-						className={`rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground ${label === "Collection" && viewingSetCards ? "bg-accent text-accent-foreground" : ""}`}
+						activeOptions={label === "dashboard" ? { exact: true } : undefined}
+						className={`rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground ${label === "collection" && viewingSetCards ? "bg-accent text-accent-foreground" : ""}`}
 						activeProps={{ className: "bg-accent text-accent-foreground" }}
 					>
-						{label}
+						{label === "dashboard"
+							? m.dashboard({}, { locale })
+							: m.collection({}, { locale })}
 					</Link>
 				))}
 			</nav>

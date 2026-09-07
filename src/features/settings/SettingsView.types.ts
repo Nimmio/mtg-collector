@@ -7,5 +7,6 @@ export type SettingsViewController = {
 	onThemeChange: (value: string) => void;
 	onCardsPerRowChange: (value: number) => void;
 	onCurrencyChange: (value: string) => void;
+	onLanguageChange: (value: string) => void;
 	onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 };

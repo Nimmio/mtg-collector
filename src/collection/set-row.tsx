@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { CalendarDays, Layers3 } from "lucide-react";
+import { m } from "#/paraglide/messages";
 import type { SetSummary } from "./set-types";
 import { formatReleaseDate } from "./set-utils";
 
@@ -43,7 +44,7 @@ export function SetRow({
 				</div>
 			</div>
 			<div className="text-sm text-muted-foreground">
-				<span className="sm:hidden">Cards: </span>
+				<span className="sm:hidden">{m.cards()}: </span>
 				{set.totalCards}
 			</div>
 			<div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -53,7 +54,7 @@ export function SetRow({
 			<div className="flex items-center gap-3 sm:justify-end">
 				<div className="min-w-0 flex-1 sm:max-w-28">
 					<div className="mb-1 flex justify-between text-xs">
-						<span>{set.ownedCards} owned</span>
+						<span>{m.owned({ count: set.ownedCards })}</span>
 						<span>{completion}%</span>
 					</div>
 					<div className="h-1.5 overflow-hidden rounded-full bg-muted">
@@ -64,7 +65,7 @@ export function SetRow({
 					</div>
 				</div>
 				<span className="hidden text-xs text-muted-foreground sm:inline">
-					{set.ownedCopies} copies
+					{m.copies({ count: set.ownedCopies })}
 				</span>
 			</div>
 		</Link>

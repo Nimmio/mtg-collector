@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-
+import { m } from "#/paraglide/messages";
 import { getPrintingsForCard } from "#/printing/printing.api";
 
 export const Route = createFileRoute("/_authenticated/printings")({
@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated/printings")({
 		console.log("Printings:", data);
 		return data;
 	},
-	component: () => <Page title="Printings" />,
+	component: () => <Page title={m.printings()} />,
 });
 
 function Page({ title }: { title: string }) {

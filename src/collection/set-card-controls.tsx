@@ -1,4 +1,5 @@
 import { Edit3, Grid2X2, List } from "lucide-react";
+import { m } from "#/paraglide/messages";
 
 /** Controls collection editing, card layout, and grid density. */
 export function SetCardControls({
@@ -26,15 +27,15 @@ export function SetCardControls({
 					type="button"
 				>
 					<Edit3 className="size-4" />
-					<span>{editMode ? "Done editing" : "Edit collection"}</span>
+					<span>{editMode ? m.done_editing() : m.edit_collection()}</span>
 				</button>
 				<div
-					aria-label="Card view"
+					aria-label={m.card_view()}
 					className="flex rounded-md border bg-card p-1"
 					role="toolbar"
 				>
 					<button
-						aria-label="Grid view"
+						aria-label={m.grid_view()}
 						className={`rounded p-2 ${view === "grid" ? "bg-muted" : "text-muted-foreground"}`}
 						onClick={() => onViewChange("grid")}
 						type="button"
@@ -42,7 +43,7 @@ export function SetCardControls({
 						<Grid2X2 className="size-4" />
 					</button>
 					<button
-						aria-label="List view"
+						aria-label={m.list_view()}
 						className={`rounded p-2 ${view === "list" ? "bg-muted" : "text-muted-foreground"}`}
 						onClick={() => onViewChange("list")}
 						type="button"
@@ -53,9 +54,9 @@ export function SetCardControls({
 			</div>
 			{view === "grid" && (
 				<label className="flex items-center gap-2 text-sm text-muted-foreground">
-					<span>Cards per row</span>
+					<span>{m.cards_per_row()}</span>
 					<select
-						aria-label="Cards per row"
+						aria-label={m.cards_per_row()}
 						className="h-9 rounded-md border bg-background px-2 text-foreground"
 						onChange={(event) => onColumnsChange(event.target.value)}
 						value={columns}

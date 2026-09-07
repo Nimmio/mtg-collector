@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import { Button } from "#/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -7,8 +8,8 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "#/components/ui/dialog";
-import { Button } from "#/components/ui/button";
 import CardDetailsView from "#/features/cardDetails/cardDetailsView";
+import { m } from "#/paraglide/messages";
 
 type CardDetailsModalProps = {
 	cardId: string;
@@ -34,10 +35,8 @@ function CardDetailsModalContent({ cardId, onClose }: CardDetailsModalProps) {
 	return (
 		<DialogContent>
 			<DialogHeader>
-				<DialogTitle>Card details</DialogTitle>
-				<DialogDescription>
-					Review this card and update your collection.
-				</DialogDescription>
+				<DialogTitle>{m.card_details()}</DialogTitle>
+				<DialogDescription>{m.review_card()}</DialogDescription>
 			</DialogHeader>
 			<CardDetailsView
 				id={cardId}
@@ -49,7 +48,7 @@ function CardDetailsModalContent({ cardId, onClose }: CardDetailsModalProps) {
 			/>
 			<DialogFooter>
 				<Button variant="outline" onClick={() => void close()}>
-					Close
+					{m.close()}
 				</Button>
 			</DialogFooter>
 		</DialogContent>

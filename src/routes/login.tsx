@@ -3,6 +3,7 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { AuthForm } from "#/features/auth/AuthForm";
 import { useLogin } from "#/features/auth/useLogin";
 import { authClient } from "#/lib/auth-client";
+import { m } from "#/paraglide/messages";
 
 export const Route = createFileRoute("/login")({
 	beforeLoad: async () => {
@@ -16,17 +17,17 @@ function LoginPage() {
 	const controller = useLogin();
 	return (
 		<AuthForm
-			title="Welcome back"
-			description="Sign in to your collection"
-			submitLabel="Sign in"
+			title={m.welcome_back()}
+			description={m.sign_in_to_collection()}
+			submitLabel={m.sign_in()}
 			{...controller}
 			onEmailChange={controller.setEmail}
 			onPasswordChange={controller.setPassword}
 			footer={
 				<>
-					<span>New here?</span>{" "}
+					<span>{m.new_here()}</span>{" "}
 					<Link className="underline" to="/signup">
-						Create an account
+						{m.create_account()}
 					</Link>
 				</>
 			}

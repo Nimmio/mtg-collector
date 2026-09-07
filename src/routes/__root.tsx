@@ -7,9 +7,8 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { NotificationProvider } from "#/components/notification";
+import { baseLocale, getLocale } from "#/paraglide/runtime";
 import { applyStoredTheme } from "#/settings/settings";
-
-import { getLocale } from "#/paraglide/runtime";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
 
@@ -37,7 +36,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: "width=device-width, initial-scale=1",
 			},
 			{
-				title: "TanStack Start Starter",
+				title: "MTG Collector",
 			},
 		],
 		links: [
@@ -52,7 +51,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang={getLocale()} className="">
+		<html lang={baseLocale} className="">
 			<head>
 				<HeadContent />
 			</head>

@@ -1,6 +1,7 @@
 import { Button } from "#/components/ui/button";
 import type { CardDetailsViewProps } from "#/features/cardDetails/CardDetailsView.types";
 import { useCardDetailsView } from "#/features/cardDetails/useCardDetailsView";
+import { m } from "#/paraglide/messages";
 
 function imageFor(
 	card: NonNullable<ReturnType<typeof useCardDetailsView>["displayedCard"]>,
@@ -39,7 +40,9 @@ export default function CardDetailsView({
 
 	if (card.isPending)
 		return (
-			<output className="text-muted-foreground">Loading card details...</output>
+			<output className="text-muted-foreground">
+				{m.loading_card_details()}
+			</output>
 		);
 	if (card.isError) {
 		return (
@@ -47,7 +50,7 @@ export default function CardDetailsView({
 				<p className="text-destructive">
 					{card.error instanceof Error
 						? card.error.message
-						: "Could not load this card."}
+						: m.could_not_load_card()}
 				</p>
 				{showNavigation && (
 					<Button
@@ -55,7 +58,7 @@ export default function CardDetailsView({
 						onClick={handleBack}
 						className="cursor-pointer"
 					>
-						Back to search
+						{m.back_to_search()}
 					</Button>
 				)}
 			</div>
@@ -75,7 +78,7 @@ export default function CardDetailsView({
 					onClick={handleBack}
 					className="cursor-pointer text-sm text-muted-foreground hover:text-foreground"
 				>
-					Back to search
+					{m.back_to_search()}
 				</button>
 			)}
 			<div className="grid gap-8 md:grid-cols-[minmax(16rem,24rem)_1fr]">
@@ -95,7 +98,7 @@ export default function CardDetailsView({
 									key={face?.name ?? "no-image"}
 									className="flex aspect-5/7 w-full max-w-sm items-center justify-center rounded-2xl bg-muted text-muted-foreground"
 								>
-									No image available
+									{m.no_image()}
 								</div>
 							);
 						})}
@@ -111,10 +114,10 @@ export default function CardDetailsView({
 								className="rounded-md border px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50"
 							>
 								{printings.isPending
-									? "Loading versions..."
+									? m.loading_versions()
 									: showVersions
-										? "Hide versions"
-										: "Show versions"}
+										? m.hide_versions()
+										: m.show_versions()}
 							</button>
 							{showVersions && printingOptions.length > 0 && (
 								<div className="max-h-[32rem] overflow-y-auto rounded-xl border bg-card p-3">
@@ -130,12 +133,12 @@ export default function CardDetailsView({
 													{imageFor(printing) ? (
 														<img
 															src={imageFor(printing)}
-															alt={printing.name ?? "Card printing"}
+															alt={printing.name ?? m.card_printing()}
 															className="h-full w-full object-cover"
 														/>
 													) : (
 														<div className="flex h-full items-center justify-center px-2 text-center text-xs text-muted-foreground">
-															No image
+															{m.no_image_short()}
 														</div>
 													)}
 												</div>
@@ -145,7 +148,7 @@ export default function CardDetailsView({
 													</p>
 													<p className="truncate text-xs text-muted-foreground">
 														{printing.collector_number} ·{" "}
-														{printing.released_at ?? "Unknown"}
+														{printing.released_at ?? m.unknown()}
 													</p>
 												</div>
 											</button>
@@ -167,7 +170,7 @@ export default function CardDetailsView({
 						{(["nonfoil", "foil"] as const).map((finish) => (
 							<label className="space-y-1 text-sm" key={finish}>
 								<span className="font-medium">
-									{finish === "foil" ? "Foil cards" : "Normal cards"}
+									{finish === "foil" ? m.foil_cards() : m.normal_cards()}
 								</span>
 								<input
 									className="h-9 w-full rounded-md border bg-background px-3"
@@ -187,17 +190,18 @@ export default function CardDetailsView({
 					)}
 					<div className="grid gap-3 rounded-xl border bg-card p-4 text-sm sm:grid-cols-2">
 						<p>
-							<strong>Set:</strong> {displayedCard.set?.toUpperCase()}
+							<strong>{m.set()}:</strong> {displayedCard.set?.toUpperCase()}
 						</p>
 						<p>
-							<strong>Rarity:</strong> {displayedCard.rarity}
+							<strong>{m.rarity()}:</strong> {displayedCard.rarity}
 						</p>
 						<p>
-							<strong>Released:</strong>{" "}
-							{displayedCard.released_at ?? "Unknown"}
+							<strong>{m.released()}:</strong>{" "}
+							{displayedCard.released_at ?? m.unknown()}
 						</p>
 						<p>
-							<strong>Artist:</strong> {displayedCard.artist ?? "Unknown"}
+							<strong>{m.artist()}:</strong>{" "}
+							{displayedCard.artist ?? m.unknown()}
 						</p>
 					</div>
 					{faces.map((face, index) => (

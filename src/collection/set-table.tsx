@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import { m } from "#/paraglide/messages";
 import { SetRow } from "./set-row";
 import type { SetSummary, SortMode } from "./set-types";
 import { sortSets } from "./set-utils";
@@ -43,15 +44,15 @@ export function SetTable({
 			style={{ "--cards-per-row": cardsPerRow } as React.CSSProperties}
 		>
 			<div className="hidden grid-cols-[minmax(0,1fr)_8rem_8rem_12rem] gap-4 border-b bg-muted/20 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground sm:grid">
-				<span>Set</span>
-				<span>Cards</span>
-				<span>Released</span>
-				<span className="text-right">Collection</span>
+				<span>{m.sets()}</span>
+				<span>{m.cards()}</span>
+				<span>{m.released()}</span>
+				<span className="text-right">{m.collection()}</span>
 			</div>
 			{roots.map((root) => renderSet(root))}
 			{sets.length === 0 && (
 				<div className="p-10 text-center text-sm text-muted-foreground">
-					No sets match your filters.
+					{m.no_sets()}
 				</div>
 			)}
 		</div>

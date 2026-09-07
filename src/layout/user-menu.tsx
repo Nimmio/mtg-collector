@@ -1,11 +1,14 @@
 import { Link } from "@tanstack/react-router";
 
 import { authClient } from "#/lib/auth-client";
+import { useLocale } from "#/lib/locale";
+import { m } from "#/paraglide/messages";
 
 export function UserMenu() {
+	const locale = useLocale();
 	const session = authClient.useSession();
 	const user = session.data?.user;
-	const name = user?.name || user?.email || "User";
+	const name = user?.name || user?.email || m.user();
 
 	return (
 		<details className="group mt-auto border-t pt-4">
@@ -22,7 +25,7 @@ export function UserMenu() {
 					className="rounded px-3 py-2 text-sm hover:bg-accent"
 					activeProps={{ className: "rounded bg-accent px-3 py-2 text-sm" }}
 				>
-					Settings
+					{m.settings({}, { locale })}
 				</Link>
 				<button
 					type="button"
@@ -35,7 +38,7 @@ export function UserMenu() {
 						})
 					}
 				>
-					Log out
+					{m.log_out({}, { locale })}
 				</button>
 			</div>
 		</details>

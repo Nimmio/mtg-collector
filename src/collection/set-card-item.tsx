@@ -1,3 +1,5 @@
+import { m } from "#/paraglide/messages";
+
 type Card = Record<string, string | object | undefined>;
 
 /** Renders one card in either the grid or compact list presentation. */
@@ -31,17 +33,19 @@ export function SetCardItem({
 		)?.[0]?.image_uris?.normal;
 	return (
 		<article
-			className={`block w-full text-left ${view === "grid" ? "relative overflow-hidden rounded-xl border bg-card" : "relative flex items-center gap-3 rounded-lg border bg-card p-3"}`}
+			className={`block w-full text-left transition duration-200 hover:-translate-y-0.5 hover:shadow-lg ${view === "grid" ? "relative cursor-pointer overflow-hidden rounded-xl border bg-card" : "relative flex cursor-pointer items-center gap-3 rounded-lg border bg-card p-3"}`}
 		>
 			<button
-				aria-label={`View details for ${String(card.name ?? "card")}`}
+				aria-label={m.view_card_details({
+					name: String(card.name ?? m.magic_card()),
+				})}
 				className="block w-full text-left"
 				onClick={onOpen}
 				type="button"
 			>
 				{image && (
 					<img
-						alt={String(card.name ?? "Card")}
+						alt={String(card.name ?? m.magic_card())}
 						className={
 							view === "grid"
 								? "aspect-[488/680] w-full object-cover"
@@ -69,7 +73,7 @@ export function SetCardItem({
 						onClick={() => onAdd("nonfoil")}
 						type="button"
 					>
-						{addingNormal ? "Adding..." : "Add normal"}
+						{addingNormal ? m.adding() : m.add_normal()}
 					</button>
 					<button
 						className="flex-1 rounded border bg-background/95 px-2 py-1.5 text-xs font-medium shadow-sm disabled:opacity-50"
@@ -77,14 +81,14 @@ export function SetCardItem({
 						onClick={() => onAdd("foil")}
 						type="button"
 					>
-						{addingFoil ? "Adding..." : "Add foil"}
+						{addingFoil ? m.adding() : m.add_foil()}
 					</button>
 				</div>
 			)}
 			{view === "list" && (
 				<div className="min-w-0">
 					<p className="truncate font-semibold">
-						{String(card.name ?? "Unknown card")}
+						{String(card.name ?? m.unknown())}
 					</p>
 					<p className="text-sm text-muted-foreground">
 						{String(card.mana_cost ?? "")}

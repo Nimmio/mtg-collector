@@ -15,6 +15,7 @@ import type {
 } from "#/features/searchCard/SearchCardView.types";
 import { sortOptions } from "#/features/searchCard/SearchCardView.types";
 import { useSearchCardView } from "#/features/searchCard/useSearchCardView";
+import { m } from "#/paraglide/messages";
 
 function cardImage(card: SearchCard) {
 	return card.image_uris?.normal ?? card.card_faces?.[0]?.image_uris?.normal;
@@ -51,12 +52,13 @@ function SearchCardViewContent({
 		<section className="mx-auto max-w-7xl space-y-8">
 			<header className="space-y-2">
 				<p className="text-sm font-medium tracking-[0.2em] text-primary uppercase">
-					Scryfall explorer
+					{m.scryfall_explorer()}
 				</p>
-				<h1 className="text-4xl font-semibold tracking-tight">Find a card</h1>
+				<h1 className="text-4xl font-semibold tracking-tight">
+					{m.find_a_card()}
+				</h1>
 				<p className="max-w-2xl text-muted-foreground">
-					Search with Scryfall syntax, such as <code>lightning t:instant</code>{" "}
-					or
+					{m.scryfall_help()} <code>lightning t:instant</code> or
 					<code>set:mh3 r:mythic</code>.
 				</p>
 			</header>
@@ -68,19 +70,19 @@ function SearchCardViewContent({
 				>
 					<div className="min-w-0 flex-1 space-y-2">
 						<label className="sr-only" htmlFor="card-search">
-							Scryfall search query
+							{m.scryfall_query()}
 						</label>
 						<Input
 							id="card-search"
 							value={input}
 							onChange={(event) => onInputChange(event.target.value)}
-							placeholder="Search cards, e.g. lightning t:instant"
+							placeholder={m.search_cards_placeholder()}
 							className="h-11 w-full"
 						/>
 					</div>
 					<div className="grid gap-3 sm:grid-cols-[auto_minmax(9rem,1fr)_auto_minmax(8rem,1fr)] sm:items-center lg:flex lg:items-center">
 						<label className="text-sm font-medium" htmlFor="card-sort">
-							Sort by
+							{m.sort_by()}
 						</label>
 						<Select value={sort} onValueChange={onSortChange}>
 							<SelectTrigger id="card-sort" className="w-full sm:w-48">
@@ -95,7 +97,7 @@ function SearchCardViewContent({
 							</SelectContent>
 						</Select>
 						<label className="text-sm font-medium" htmlFor="card-direction">
-							Order
+							{m.order()}
 						</label>
 						<Select value={direction} onValueChange={onDirectionChange}>
 							<SelectTrigger id="card-direction" className="w-full sm:w-36">
@@ -103,8 +105,8 @@ function SearchCardViewContent({
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="auto">Default</SelectItem>
-								<SelectItem value="asc">Ascending</SelectItem>
-								<SelectItem value="desc">Descending</SelectItem>
+								<SelectItem value="asc">{m.ascending()}</SelectItem>
+								<SelectItem value="desc">{m.descending()}</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
@@ -114,7 +116,7 @@ function SearchCardViewContent({
 						className="lg:shrink-0"
 						disabled={!input.trim() || isFetching}
 					>
-						{isFetching ? "Searching..." : "Search cards"}
+						{isFetching ? m.searching() : m.search_cards()}
 					</Button>
 				</form>
 				{isFetching && (
@@ -123,16 +125,14 @@ function SearchCardViewContent({
 							className="size-3 animate-spin rounded-full border-2 border-primary border-t-transparent"
 							aria-hidden="true"
 						/>
-						Loading cards...
+						{m.loading_cards()}
 					</output>
 				)}
 			</div>
 
 			{isError && (
 				<div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive">
-					{error instanceof Error
-						? error.message
-						: "Scryfall could not complete that search."}
+					{error instanceof Error ? error.message : m.scryfall_search_error()}
 				</div>
 			)}
 
@@ -140,17 +140,21 @@ function SearchCardViewContent({
 				<div className="space-y-6 rounded-2xl border bg-card p-4 shadow-sm sm:p-6">
 					<div className="flex flex-wrap items-center justify-between gap-3 border-b pb-4">
 						<p className="text-sm text-muted-foreground">
-							{result.total_cards.toLocaleString()} result
-							{result.total_cards === 1 ? "" : "s"} for <strong>{query}</strong>
+							{result.total_cards === 1
+								? m.result_count({ count: result.total_cards })
+								: m.results_count({ count: result.total_cards })}{" "}
+							for <strong>{query}</strong>
 						</p>
 						{result.has_more && (
-							<p className="text-sm text-muted-foreground">Page {page}</p>
+							<p className="text-sm text-muted-foreground">
+								{m.page({ page })}
+							</p>
 						)}
 					</div>
 
 					{result.data.length === 0 ? (
 						<div className="rounded-xl border border-dashed p-10 text-center text-muted-foreground">
-							No cards matched that query.
+							{m.no_cards()}
 						</div>
 					) : (
 						<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
@@ -165,20 +169,22 @@ function SearchCardViewContent({
 											<Link
 												to="/cardDetails/$cardId"
 												params={{ cardId: card.id }}
-												aria-label={`View details for ${card.name ?? "Magic card"}`}
+												aria-label={m.view_card_details({
+													name: card.name ?? m.magic_card(),
+												})}
 												className="block rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
 											>
 												<div className="aspect-5/7 overflow-hidden rounded-xl bg-muted shadow-sm ring-1 ring-border">
 													{image ? (
 														<img
 															src={image}
-															alt={card.name ?? "Magic card"}
+															alt={card.name ?? m.magic_card()}
 															loading="lazy"
 															className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
 														/>
 													) : (
 														<div className="flex h-full items-center justify-center p-4 text-center text-sm text-muted-foreground">
-															No image available
+															{m.no_image()}
 														</div>
 													)}
 												</div>
@@ -194,17 +200,17 @@ function SearchCardViewContent({
 													/>
 												) : (
 													<div className="flex h-full items-center justify-center p-4 text-center text-sm text-muted-foreground">
-														No image available
+														{m.no_image()}
 													</div>
 												)}
 											</div>
 										)}
 										<div>
 											<h2 className="truncate font-medium" title={card.name}>
-												{card.name ?? "Unnamed card"}
+												{card.name ?? m.unnamed_card()}
 											</h2>
 											<p className="truncate text-sm text-muted-foreground">
-												{card.set_name ?? "Unknown set"}
+												{card.set_name ?? m.unknown_set()}
 												{card.collector_number
 													? ` · ${card.collector_number}`
 													: ""}
@@ -224,7 +230,7 @@ function SearchCardViewContent({
 								disabled={page === 1 || isFetching}
 								onClick={() => onPageChange(page - 1)}
 							>
-								Previous
+								{m.previous()}
 							</Button>
 							<Button
 								type="button"
@@ -232,13 +238,13 @@ function SearchCardViewContent({
 								disabled={!result.has_more || isFetching}
 								onClick={() => onPageChange(page + 1)}
 							>
-								Next
+								{m.next()}
 							</Button>
 							<Select
 								value={String(page)}
 								onValueChange={(value) => onPageChange(Number(value))}
 							>
-								<SelectTrigger className="w-32" aria-label="Select page">
+								<SelectTrigger className="w-32" aria-label={m.select_page()}>
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
@@ -247,7 +253,7 @@ function SearchCardViewContent({
 										(_, index) => index + 1,
 									).map((pageNumber) => (
 										<SelectItem key={pageNumber} value={String(pageNumber)}>
-											Page {pageNumber}
+											{m.page({ page: pageNumber })}
 										</SelectItem>
 									))}
 								</SelectContent>

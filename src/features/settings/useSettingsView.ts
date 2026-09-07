@@ -1,8 +1,11 @@
 import { useState } from "react";
 import type { SettingsViewController } from "#/features/settings/SettingsView.types";
+import { setCurrentLocale } from "#/lib/locale";
+import { setLocale } from "#/paraglide/runtime";
 import {
 	type Currency,
 	type defaultSettings,
+	type Language,
 	readSettings,
 	saveSettings,
 	type Theme,
@@ -26,9 +29,16 @@ export function useSettingsView(): SettingsViewController {
 		onThemeChange: (value) => updateSettings("theme", value as Theme),
 		onCardsPerRowChange: (value) => updateSettings("cardsPerRow", value),
 		onCurrencyChange: (value) => updateSettings("currency", value as Currency),
+		onLanguageChange: (value) => {
+			const language = value as Language;
+			updateSettings("language", language);
+		},
 		onSubmit: (event) => {
 			event.preventDefault();
 			saveSettings(settings);
+			setLocale(settings.language, { reload: false });
+			setCurrentLocale(settings.language);
+			document.documentElement.lang = settings.language;
 			setSaved(true);
 		},
 	};

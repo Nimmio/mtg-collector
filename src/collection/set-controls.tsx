@@ -1,5 +1,6 @@
 import { ChevronDown, Search } from "lucide-react";
 import type { ReactNode } from "react";
+import { m } from "#/paraglide/messages";
 import type { SetSummary, SortMode } from "./set-types";
 
 type SetControlsProps = {
@@ -31,15 +32,15 @@ export function SetControls({
 			<label className="relative min-w-0 flex-1">
 				<Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
 				<input
-					aria-label="Find sets"
+					aria-label={m.find_sets()}
 					className="h-10 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
 					onChange={(event) => onSearchChange(event.target.value)}
-					placeholder="Find sets"
+					placeholder={m.find_sets()}
 					value={search}
 				/>
 			</label>
-			<Select label="Set type" onChange={onTypeChange} value={type}>
-				<option value="all">All set types</option>
+			<Select label={m.set_type()} onChange={onTypeChange} value={type}>
+				<option value="all">{m.all_set_types()}</option>
 				{types.map((value) => (
 					<option key={value} value={value ?? ""}>
 						{value}
@@ -47,14 +48,14 @@ export function SetControls({
 				))}
 			</Select>
 			<Select
-				label="Sort"
+				label={m.sort()}
 				onChange={(value) => onSortChange(value as SortMode)}
 				value={sort}
 			>
-				<option value="release">Release date</option>
-				<option value="name">Name</option>
-				<option value="cards">Number of cards</option>
-				<option value="completion">Collection progress</option>
+				<option value="release">{m.release_date()}</option>
+				<option value="name">{m.name()}</option>
+				<option value="cards">{m.number_of_cards()}</option>
+				<option value="completion">{m.collection_progress()}</option>
 			</Select>
 		</div>
 	);
